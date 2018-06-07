@@ -22,13 +22,19 @@ public class FutrueTask<T> implements RunnableFuture<T> {
     private Callable<T> callable;
 
     private volatile Thread runner;
-    private AtomicReference<Thread> threadAtomicReference;
-    private static final long runnerOffset;
+    private Object outcome;
     private static final Unsafe UNSAFE;
+    private static final long runnerOffset;
+    private static final long outcomeOffSet;
+    private static final long stateOffset;
+
     static {
         try {UNSAFE = Unsafe.getUnsafe();
             Class<FutrueTask> futrueTaskClass = FutrueTask.class;
             runnerOffset = UNSAFE.objectFieldOffset(futrueTaskClass.getDeclaredField("runner"));
+            outcomeOffSet = UNSAFE.objectFieldOffset(futrueTaskClass.getDeclaredField("outcome"));
+            stateOffset = UNSAFE.objectFieldOffset(futrueTaskClass.getDeclaredField("state"));
+
         } catch (NoSuchFieldException e) {
             throw new Error(e);
         }
@@ -49,15 +55,23 @@ public class FutrueTask<T> implements RunnableFuture<T> {
         Callable<T> callable = this.callable;
         if (callable != null && state == NEW) {
             T result;
-            boolean ran;
             try {
                 result = callable.call();
-                ran = true;
+                set(result);
             } catch (Throwable ex) {
                 result = null;
-                ran = false;
 
+            } finally {
+                runner = null;
             }
+        }
+    }
+
+    private void set(T result) {
+        if (UNSAFE.compareAndSwapObject(this, stateOffset, NEW, COMPLETING)) {
+            outcome = result;
+            UNSAFE.putOrderedInt(this, stateOffset, NORMAL);
+
         }
     }
 
