@@ -9,11 +9,10 @@ public class CacheDemo {
 
     @Test
     public void test() {
-        System.setProperty(DebuggingClassWriter.DEBUG_LOCATION_PROPERTY,Thread.currentThread().getContextClassLoader().getResource("").getPath());
+//        System.setProperty(DebuggingClassWriter.DEBUG_LOCATION_PROPERTY,Thread.currentThread().getContextClassLoader().getResource("").getPath());
         ApplicationContext context = new ClassPathXmlApplicationContext("cache.xml");
         CacheService service = (CacheService) context.getBean("cacheService");
-        service.getName("name");
-        service.getName("name");
-        service.getName("name");
+        service.getName("name", "name2");
+        service.getName("name", "name2");
     }
 }
