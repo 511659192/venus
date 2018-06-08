@@ -20,7 +20,6 @@ public class FastRemoveList<T> {
     private static final long WORD_MASK = -1L; // 补码
     private long[] words;
     private int wordSize;
-    private long lastWordMask;
 
     private List<T> targetList;
     private int originalSize;

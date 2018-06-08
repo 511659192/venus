@@ -17,7 +17,7 @@ import java.util.concurrent.locks.ReentrantLock;
  */
 public class MyThreaPoolExecutor {
     private final AtomicInteger ctl = new AtomicInteger(RUNNING);
-    private static final int BIT_COUNT = Integer.SIZE -3;
+    private static final int BIT_COUNT = Integer.SIZE - 3;
     private static final int CAPACITY = 1 << BIT_COUNT - 1;
     private static final int RUN_STATE_MASK = ~CAPACITY;
     private static final int RUNNING = -1 << BIT_COUNT; //  正常态 可以接受新的任务 也可以处理队列
