@@ -1,4 +1,4 @@
-package com.ym.materials.optimize.proxy;
+package com.ym.materials.proxy;
 
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;

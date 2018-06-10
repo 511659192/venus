@@ -1,12 +1,14 @@
 package com.ym.materials.optimize.executor;
 
 import com.google.common.base.Preconditions;
-import org.junit.internal.runners.statements.RunAfters;
 
-import javax.swing.*;
-import javax.swing.plaf.TableHeaderUI;
+import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.concurrent.*;
+import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.AbstractQueuedSynchronizer;
 import java.util.concurrent.locks.Condition;
@@ -18,7 +20,7 @@ import java.util.concurrent.locks.ReentrantLock;
 public class MyThreaPoolExecutor {
     private final AtomicInteger ctl = new AtomicInteger(RUNNING);
     private static final int BIT_COUNT = Integer.SIZE - 3;
-    private static final int CAPACITY = 1 << BIT_COUNT - 1;
+    private static final int CAPACITY = (1 << BIT_COUNT) - 1;
     private static final int RUN_STATE_MASK = ~CAPACITY;
     private static final int RUNNING = -1 << BIT_COUNT; //  正常态 可以接受新的任务 也可以处理队列
     private static final int SHUTDOWN = 0; // 不接受新任务 可以处理队列
@@ -31,8 +33,14 @@ public class MyThreaPoolExecutor {
 
     private final HashSet<Worker> workers = new HashSet<Worker>();
     private int largestPoolSize;
-
     private long completedTaskCount;
+    private volatile boolean allowCoreThreadTimeOut;
+    private final long keepAliveTime;
+    private final int corePoolSize;
+    private final int maximumPoolSize;
+    private final BlockingQueue<Runnable> workQueue;
+    private final ThreadFactory threadFactory = new DefaultThreadFactory();
+    private final RejectedExecutionHandler handler = new RejectedExecutionHandler.AbortPolicy();
 
     private static int runStateOf(int c) {
         return c & RUN_STATE_MASK;
@@ -45,20 +53,6 @@ public class MyThreaPoolExecutor {
     private static int ctlOf(int rs, int sc) {
         return rs | sc;
     }
-
-    public static void main(String[] args) {
-        MyThreaPoolExecutor executor = new MyThreaPoolExecutor(1, 1, 0, TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(1024));
-        System.out.println(executor.ctl.get());
-        System.out.println(MyThreaPoolExecutor.RUNNING);
-    }
-
-    private volatile boolean allowCoreThreadTimeOut;
-    private final long keepAliveTime;
-    private final int corePoolSize;
-    private final int maximumPoolSize;
-    private final BlockingQueue<Runnable> workQueue;
-    private final ThreadFactory threadFactory = new DefaultThreadFactory();
-    private final RejectedExecutionHandler handler = new RejectedExecutionHandler.AbortPolicy();
 
     public MyThreaPoolExecutor(int corePoolSize,
                               int maximumPoolSize,
@@ -133,7 +127,7 @@ public class MyThreaPoolExecutor {
             try {
                 if (ctl.compareAndSet(c, TIDYING)) {
                     try {
-                        tryTerminate();
+//                        terminated(); // do nothing
                     } finally {
                         ctl.set(TERMINATED);
                         termination.signalAll();
@@ -302,6 +296,16 @@ public class MyThreaPoolExecutor {
         public boolean tryLock() {
             return tryAcquire(1);
         }
+
+        void interruptIfStarted() {
+            Thread t;
+            if (getState() >= 0 && (t = thread) != null && !t.isInterrupted()) {
+                try {
+                    t.interrupt();
+                } catch (SecurityException ignore) {
+                }
+            }
+        }
     }
 
     private final void runWorker(Worker w) {
@@ -312,19 +316,15 @@ public class MyThreaPoolExecutor {
         w.unLock();
         boolean completedAbruptly = true;
         try {
-            System.out.println(task == null);
             while (task != null || (task = getTask()) != null) {
                 w.lock();
-                if ((runStateOf(ctl.get()) >= STOP || (thread.interrupted() && runStateOf(ctl.get()) >= STOP)) && !thread.isInterrupted()) {
+                if ((runStateOf(ctl.get()) >= STOP || (Thread.interrupted() && runStateOf(ctl.get()) >= STOP)) && !thread.isInterrupted()) {
                     thread.interrupt();
                 }
                 try {
-                    Throwable throwable = null;
                     try {
-                        System.out.println("====================");
                         task.run();
                     } catch (Exception e) {
-                        throwable = e;
                         throw e;
                     }
                 } finally {
@@ -348,7 +348,6 @@ public class MyThreaPoolExecutor {
         ReentrantLock mainLock = this.mainLock;
         mainLock.lock();
         try {
-
             completedTaskCount += w.completedTasks;
             workers.remove(w);
         } finally {
@@ -376,7 +375,7 @@ public class MyThreaPoolExecutor {
         for (;;) {
             int c = ctl.get();
             int rs = runStateOf(c);
-            if (rs >= STOP || workQueue.isEmpty()) {
+            if (rs >= SHUTDOWN && (rs >= STOP || workQueue.isEmpty())) {
                 decrementWorkerCount();
                 return null;
             }
@@ -409,5 +408,74 @@ public class MyThreaPoolExecutor {
 
     private void decrementWorkerCount() {
         ctl.decrementAndGet();
+    }
+
+    public void shutdown() {
+        ReentrantLock mainLock = this.mainLock;
+        mainLock.lock();
+        try {
+//            checkShutdownAccess();
+            advanceRunState(SHUTDOWN);
+            interruptIdleWorkers(false);
+        } finally {
+            mainLock.unlock();
+        }
+        tryTerminate();
+    }
+
+    private void advanceRunState(int targetState) {
+        for (;;) {
+            int c = ctl.get();
+            if (runStateOf(c) >= targetState || ctl.compareAndSet(c, ctlOf(targetState, workerCountOf(c)))) { // 目标状态 + 当前worker数量
+                break;
+            }
+        }
+    }
+
+    public List<Runnable> shutdownNow() {
+        ReentrantLock mainLock = this.mainLock;
+        List<Runnable> taskList;
+        mainLock.lock();
+        try {
+            advanceRunState(STOP);
+            interruptWorkers();
+            taskList = drainQueue();
+        } finally {
+            mainLock.unlock();
+        }
+
+        tryTerminate();
+        return taskList;
+    }
+
+    private void interruptWorkers() {
+        ReentrantLock mainLock = this.mainLock;
+        mainLock.lock();
+        try {
+            for (Worker worker : workers) {
+                worker.interruptIfStarted();
+            }
+        } finally {
+            mainLock.unlock();
+        }
+    }
+
+    private List<Runnable> drainQueue() {
+        BlockingQueue<Runnable> queue = this.workQueue;
+        List<Runnable> taskList = new ArrayList<>();
+        queue.drainTo(taskList);
+        if (!queue.isEmpty()) {
+            for (Runnable runnable : queue) {
+                if (queue.remove(runnable)) {
+                    taskList.add(runnable);
+                }
+            }
+        }
+        return taskList;
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        shutdown();
     }
 }

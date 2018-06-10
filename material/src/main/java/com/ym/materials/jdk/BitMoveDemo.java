@@ -1,4 +1,4 @@
-package com.ym.materials.optimize.jdk;
+package com.ym.materials.jdk;
 
 public class BitMoveDemo {
 

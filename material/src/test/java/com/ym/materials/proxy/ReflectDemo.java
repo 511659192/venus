@@ -1,4 +1,4 @@
-package com.ym.materials.optimize.proxy;
+package com.ym.materials.proxy;
 
 import net.sf.cglib.reflect.FastClass;
 import net.sf.cglib.reflect.FastMethod;

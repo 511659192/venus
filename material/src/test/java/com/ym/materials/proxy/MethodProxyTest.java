@@ -1,7 +1,6 @@
-package com.ym.materials.optimize.proxy;
+package com.ym.materials.proxy;
 
 import com.google.common.base.Stopwatch;
-import net.sf.cglib.core.DebuggingClassWriter;
 import org.junit.Test;
 
 import java.lang.reflect.Method;

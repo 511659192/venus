@@ -1,6 +1,5 @@
-package com.ym.materials.optimize.proxy;
+package com.ym.materials.proxy;
 
-import com.google.common.collect.Maps;
 import javassist.*;
 import org.apache.commons.lang3.reflect.MethodUtils;
 

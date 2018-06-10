@@ -1,4 +1,4 @@
-package com.ym.materials.optimize.json;
+package com.ym.materials.json;
 
 public class JsonDemo {
 
