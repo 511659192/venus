@@ -28,4 +28,11 @@ public class HostAndPort {
     public void setPort(int port) {
         this.port = port;
     }
+
+    public static String[] extractParts(String from){
+        int idx = from.lastIndexOf(":");
+        String host = idx != -1 ? from.substring(0, idx)  : from;
+        String port = idx != -1 ? from.substring(idx + 1) : "";
+        return new String[] { host, port };
+    }
 }

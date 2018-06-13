@@ -20,4 +20,16 @@ public class Jedis extends BinaryJedis {
     public Jedis(String host, int port, int connectTimeout, int soTimeout, boolean ssl, SSLSocketFactory sslSocketFactory, SSLParameters sslParameters, HostnameVerifier hostnameVerifier) {
         super(host, port, connectTimeout, soTimeout, ssl, sslSocketFactory, sslParameters, hostnameVerifier);
     }
+
+    public void close() {
+        if (dataSource != null) {
+            if (client.isBroken()) {
+                this.dataSource.returnBrokenResource(this);
+            } else {
+                this.dataSource.returnResource(this);
+            }
+        } else {
+            client.close();
+        }
+    }
 }

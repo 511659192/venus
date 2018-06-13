@@ -111,4 +111,38 @@ public abstract class Pool<T> implements Closeable {
     private boolean poolInactive() {
         return internalPool == null || internalPool.isClosed();
     }
+
+    @Deprecated
+    public void returnBrokenResource(final T resource) {
+        if (resource != null) {
+            returnBrokenResourceObject(resource);
+        }
+    }
+
+    protected void returnBrokenResourceObject(final T resource) {
+        try {
+            internalPool.invalidateObject(resource);
+        } catch (Exception e) {
+            throw new JedisException("Could not return the resource to the pool", e);
+        }
+    }
+
+    @Deprecated
+    public void returnResource(final T resource) {
+        if (resource != null) {
+            returnResourceObject(resource);
+        }
+    }
+
+    @Deprecated
+    public void returnResourceObject(final T resource) {
+        if (resource == null) {
+            return;
+        }
+        try {
+            internalPool.returnObject(resource);
+        } catch (Exception e) {
+            throw new JedisException("Could not return the resource to the pool", e);
+        }
+    }
 }

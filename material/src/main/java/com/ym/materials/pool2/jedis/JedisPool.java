@@ -1,5 +1,6 @@
 package com.ym.materials.pool2.jedis;
 
+import com.ym.materials.pool2.jedis.exceptions.JedisException;
 import com.ym.materials.pool2.util.JedisURIHelper;
 import com.ym.materials.pool2.util.Pool;
 import org.apache.commons.lang3.StringUtils;
@@ -45,5 +46,36 @@ public class JedisPool extends Pool<Jedis> {
         Jedis jedis = super.getResource();
         jedis.setDataSource(this);
         return jedis;
+    }
+
+    @Override
+    @Deprecated
+    public void returnBrokenResource(final Jedis resource) {
+        if (resource != null) {
+            returnBrokenResourceObject(resource);
+        }
+    }
+
+    @Override
+    @Deprecated
+    public void returnResource(final Jedis resource) {
+        if (resource != null) {
+            try {
+//                resource.resetState();
+                returnResourceObject(resource);
+            } catch (Exception e) {
+                returnBrokenResource(resource);
+                throw new JedisException("Could not return the resource to the pool", e);
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        GenericObjectPoolConfig poolConfig = new GenericObjectPoolConfig();
+        poolConfig.setMaxWaitMillis(Integer.MAX_VALUE);
+        poolConfig.setTestOnBorrow(true);
+        poolConfig.setTestOnCreate(true);
+        JedisPool pool = new JedisPool(poolConfig, "localhost", 6379);
+        pool.getResource();
     }
 }

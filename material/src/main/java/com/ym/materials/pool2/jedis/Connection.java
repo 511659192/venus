@@ -2,7 +2,9 @@ package com.ym.materials.pool2.jedis;
 
 import com.ym.materials.pool2.jedis.Protocol.Command;
 import com.ym.materials.pool2.jedis.exceptions.JedisConnectionException;
+import com.ym.materials.pool2.util.IOUtils;
 import com.ym.materials.pool2.util.SafeEncoder;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
@@ -16,6 +18,9 @@ import java.net.Socket;
  * Created by ym on 2018/6/12.
  */
 public class Connection {
+
+    private static final byte[][] EMPTY_ARGS = new byte[0][];
+
     private String host;
     private int port;
     private boolean ssl;
@@ -24,6 +29,8 @@ public class Connection {
     private HostnameVerifier hostnameVerifier;
     private int connectTimeout;
     private int soTimeout;
+
+    private int pipelinedCommands = 0;
 
     private Socket socket;
     private RedisOutputStream outputStream;
@@ -94,13 +101,87 @@ public class Connection {
         return sendCommand(auth, bargs);
     }
 
+    protected Connection sendCommand(final Command cmd) {
+        return sendCommand(cmd, EMPTY_ARGS);
+    }
+
     protected Connection sendCommand(final Command cmd, final byte[]... args) {
         try {
             connect();
             Protocol.sendCommand(outputStream, cmd, args);
+            pipelinedCommands++;
+            return this;
         } catch (JedisConnectionException e) {
+            try {
+                String errMsg = Protocol.readErrorLineIfPossible(inputStream);
+                if (StringUtils.isNotBlank(errMsg)) {
+                    throw new JedisConnectionException(errMsg, e.getCause());
+                }
+            } catch (Exception igore) {
 
+            }
+            broken = true;
+            throw e;
         }
-        return null;
+    }
+
+    public String getStatusCodeReply() {
+        flush();
+        pipelinedCommands--;
+        final byte[] resp = (byte[]) readProtocolWithCheckingBroken();
+        if (resp == null) {
+            return null;
+        }
+        return SafeEncoder.encode(resp);
+    }
+
+    private Object readProtocolWithCheckingBroken() {
+        try {
+            return Protocol.read(inputStream);
+        } catch (JedisConnectionException e) {
+            broken = true;
+            throw e;
+        }
+    }
+
+    private void flush() {
+        try {
+            outputStream.flush();
+        } catch (IOException e) {
+            broken = true;
+            throw new JedisConnectionException(e);
+        }
+    }
+
+
+    public boolean isBroken() {
+        return broken;
+    }
+
+    public void close() {
+        disConnect();
+    }
+
+    public void disConnect() {
+        if (!isConnected()) {
+            return;
+        }
+        try {
+            outputStream.flush();
+            socket.close();
+        } catch (IOException e) {
+            broken = true;
+            throw new JedisConnectionException(e);
+        } finally {
+            IOUtils.closeQuietly(socket);
+        }
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public int getPort() {
+        return port;
     }
 }
