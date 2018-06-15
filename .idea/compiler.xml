@@ -11,9 +11,9 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="material" target="1.7" />
-      <module name="springBoot2" target="1.7" />
-      <module name="venus" target="1.7" />
+      <module name="material" target="1.8" />
+      <module name="springBoot2" target="1.8" />
+      <module name="venus" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>
