@@ -2,12 +2,7 @@ package com.ym.materials.optimize.executor2;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
-import com.sun.org.apache.regexp.internal.RE;
-import org.apache.commons.collections4.QueueUtils;
-import org.omg.CORBA.TCKind;
-import sun.java2d.pipe.AAShapePipe;
 
-import java.awt.peer.WindowPeer;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -40,7 +35,6 @@ public class ThreadPoolExecutor {
     private final RejectedExecutionHandler handler = new DiscardPolicy();
     private final List<Worker> workers = Lists.newArrayList();
     private boolean allowCoreTimeout = false;
-
 
     private final ReentrantLock mainLock = new ReentrantLock();
 
@@ -181,7 +175,7 @@ public class ThreadPoolExecutor {
     }
 
     private <T> RunnableFuture<T> newtaskFor(Callable<T> task) {
-        return new FutrureTask<T>(task);
+        return new FutureTask<T>(task);
     }
 
     public Runnable getTask() {
