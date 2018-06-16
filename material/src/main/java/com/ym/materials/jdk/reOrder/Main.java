@@ -19,7 +19,7 @@ public class Main {
         long min = Integer.MAX_VALUE;
         long max = 0;
         for(int n = 0;n <= 100;n++) {
-            final Container1 basket = new Container1();
+            final Container1 container1 = new Container1();
             List<Thread> putThreads = new ArrayList<Thread>();
             List<Thread> takeThreads = new ArrayList<Thread>();
             for (int i = 0; i < THREADS_COUNT; i++) {
@@ -27,7 +27,7 @@ public class Main {
                     @Override
                     public void run() {
                         for (int j = 0; j < LOOP_COUNT; j++) {
-                            basket.create();
+                            container1.create();
                         }
                     }
                 });
@@ -35,7 +35,7 @@ public class Main {
                     @Override
                     public void run() {
                         for (int j = 0; j < LOOP_COUNT; j++) {
-                            basket.get().getStatus();
+                            container1.get().getStatus();
                         }
                     }
                 });
