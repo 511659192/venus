@@ -1,7 +1,7 @@
 package com.ym.materials.pool2.util;
 
-import com.ym.materials.pool2.jedis.exceptions.JedisConnectionException;
-import com.ym.materials.pool2.jedis.exceptions.JedisException;
+import com.ym.materials.pool2.redis.jedis.exceptions.JedisConnectionException;
+import com.ym.materials.pool2.redis.jedis.exceptions.JedisException;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
