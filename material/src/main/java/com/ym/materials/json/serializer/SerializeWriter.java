@@ -12,7 +12,7 @@ public class SerializeWriter extends Writer {
 
     private final static ThreadLocal<char[]> bufLocal = new ThreadLocal<char[]>();
 
-    protected char                           buf[];
+    protected char buf[];
 
     private Writer writer;
     private int features;
@@ -31,6 +31,10 @@ public class SerializeWriter extends Writer {
     private char keySeperator;
     private boolean browserSecure;
     private long sepcialBits;
+
+    private final static char singleQuete = '\'';
+    private final static char colon = ':';
+    private final static char backSlash = '\\';
 
     protected int maxBufSize = -1;
 
@@ -194,6 +198,123 @@ public class SerializeWriter extends Writer {
 
             }
         }
+    }
+
+    private void writeKeyWithSingleQuoteIfHasSepcial(String text) {
+        byte[] specicalFlags_singleQuotes = IOUtils.specicalFlags_singleQuotes;
+        int len = text.length();
+        // count = 3 len = 3 newCount = 7
+        int newCount = count + len + 1;
+        if (newCount > buf.length) {
+            if (writer == null) {
+                expandCapacity(newCount);
+            } else {
+                if (len == 0) {
+                    writeSignleQuete();
+                    writeSignleQuete();
+                    writeColon();
+                    return;
+                }
+
+                boolean hasSpecial = false;
+                for (int i = 0; i < len; i++) {
+                    char ch = text.charAt(i);
+                    if (ch < specicalFlags_singleQuotes.length && specicalFlags_singleQuotes[ch] != 0) {
+                        hasSpecial = true;
+                        break;
+                    }
+                }
+
+                if (hasSpecial) {
+                    writeSignleQuete();
+                }
+
+                for (int i = 0; i < len; i++) {
+                    char ch = text.charAt(i);
+                    if (ch < specicalFlags_singleQuotes.length && specicalFlags_singleQuotes[ch] != 0) {
+                        writeBackSlash();
+                        write(replaceChars[(int) ch]);
+                    } else {
+                        write(ch);
+                    }
+                }
+
+                if (hasSpecial) {
+                    writeSignleQuete();
+                }
+                writeColon();
+                return;
+            }
+        }
+
+        if (len == 0) {
+            newCount = count + 3;
+            expandCapacityIfNecessary(newCount);
+            buf[count++] = singleQuete;
+            buf[count++] = singleQuete;
+            buf[count++] = colon;
+            return;
+        }
+
+        int start = count; // start = 3
+        int end = start + len;  // end = 6
+        text.getChars(0, len, buf, start);
+        count = newCount; // count = 7
+        boolean hasSpecial = false;
+        for (int i = start; i < end; i++) {
+            char ch = buf[i];
+            if (ch < specicalFlags_singleQuotes.length && specicalFlags_singleQuotes[ch] != 0) {
+                if (!hasSpecial) {
+                    newCount += 3; // newCount = count = 10
+                    expandCapacity(newCount);
+                    count = newCount;
+
+                    // i = start = 3 end = 6
+                    // 0,1,2,3,4,5
+                    System.arraycopy(buf, i + 1, buf, i + 3, end - i - 1);
+                    // System.arraycopy(buf, 4, buf, 6, 2);
+                    // 0,1,2,3, , ,4,5
+                    System.arraycopy(buf, 0, buf, 1, i);
+                    //  ,0,1,2, , ,4,5
+                    buf[start] = singleQuete;
+                    //  ,0,1,', , ,4,5
+                    buf[++i] = backSlash;
+                    //  ,0,1,',/, ,4,5
+                    buf[++i] = replaceChars[(int) ch];
+                    //  ,0,1,',/,c,4,5
+                    end += 2;
+                    buf[count - 2] = singleQuete;
+                    hasSpecial = true;
+                } else {
+                    newCount++;
+                    expandCapacityIfNecessary(newCount);
+                    count = newCount;
+                    System.arraycopy(buf, i + 1, buf, i + 2, end - i);
+                    buf[i] = backSlash;
+                    buf[++i] = replaceChars[(int) ch];
+                    end++;
+                }
+            }
+        }
+        buf[newCount - 1] = colon;
+    }
+
+    private void expandCapacityIfNecessary(int newCount) {
+        if (newCount > buf.length) {
+            expandCapacity(newCount);
+        }
+    }
+
+    private void writeColon() {
+        write(':');
+    }
+
+    private void writeBackSlash() {
+        write('\\');
+    }
+
+    private void writeSignleQuete() {
+        write('\'');
     }
 
     private void writeStringWithSingleQuote(String text) {
