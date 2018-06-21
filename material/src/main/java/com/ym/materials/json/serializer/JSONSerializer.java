@@ -1,7 +1,11 @@
 package com.ym.materials.json.serializer;
 
+import com.alibaba.fastjson.JSONException;
+
+import java.io.IOException;
+
 public class JSONSerializer extends SerializeFilterable {
-    private final SerializeWriter out;
+    public final SerializeWriter out;
     private final SerializeConfig config;
     private String dateFormat;
     public JSONSerializer(SerializeWriter out, SerializeConfig config) {
@@ -24,5 +28,25 @@ public class JSONSerializer extends SerializeFilterable {
 
         out.writeFieldName(key);
         write(value);
+    }
+
+    public final void write(Object object) {
+        if (object == null) {
+            out.writeNull();
+            return;
+        }
+
+        Class<?> clazz = object.getClass();
+        ObjectSerializer writer = getObjectWriter(clazz);
+
+        try {
+            writer.write(this, object, null, null, 0);
+        } catch (IOException e) {
+            throw new JSONException(e.getMessage(), e);
+        }
+    }
+
+    private ObjectSerializer getObjectWriter(Class<?> clazz) {
+        return config.getObjectWriter(clazz);
     }
 }

@@ -16,7 +16,11 @@ public enum SerializerFeature {
     WriteSlashAsSpecial,
     IgnoreErrorGetter,
     WriteClassName,
-    BrowserSecure;
+    BrowserSecure,
+    WriteNullListAsEmpty,
+    WriteNullStringAsEmpty,
+    WriteNullBooleanAsFalse,
+    WriteNullNumberAsZero;
 
     SerializerFeature() {
         mask = (1 << ordinal());

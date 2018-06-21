@@ -45,13 +45,10 @@ public class JSON {
                 }
             }
 
-
+            serializer.write(object);
+            return out.toString();
         } finally {
             out.close();
         }
-
-
-        return null;
     }
-
 }

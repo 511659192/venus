@@ -6,6 +6,14 @@ public class IOUtils {
     public final static char[] replaceChars = new char[93];
     public final static byte[] specicalFlags_singleQuotes = new byte[161];
     public final static byte[] specicalFlags_doubleQuotes = new byte[161];
+    public static final char[] DIGITS = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+
+    public final static char[] ASCII_CHARS = { '0', '0', '0', '1', '0', '2', '0', '3', '0', '4', '0',
+            '5', '0', '6', '0', '7', '0', '8', '0', '9', '0', 'A', '0', 'B', '0', 'C', '0', 'D', '0', 'E', '0', 'F',
+            '1', '0', '1', '1', '1', '2', '1', '3', '1', '4', '1', '5', '1', '6', '1', '7', '1', '8', '1', '9', '1',
+            'A', '1', 'B', '1', 'C', '1', 'D', '1', 'E', '1', 'F', '2', '0', '2', '1', '2', '2', '2', '3', '2', '4',
+            '2', '5', '2', '6', '2', '7', '2', '8', '2', '9', '2', 'A', '2', 'B', '2', 'C', '2', 'D', '2', 'E', '2',
+            'F',};
 
     static {
         specicalFlags_doubleQuotes['\0'] = 4;

@@ -3,10 +3,13 @@ package com.ym.materials.json.serializer;
 import com.alibaba.fastjson.JSONException;
 import com.ym.materials.json.util.IOUtils;
 
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.IllegalFormatFlagsException;
 
-import static com.ym.materials.json.util.IOUtils.replaceChars;
+import static com.ym.materials.json.serializer.SerializerFeature.*;
+import static com.ym.materials.json.util.IOUtils.*;
 
 public class SerializeWriter extends Writer {
 
@@ -33,8 +36,10 @@ public class SerializeWriter extends Writer {
     private long sepcialBits;
 
     private final static char singleQuete = '\'';
+    private final static char doubleQuete = '"';
     private final static char colon = ':';
     private final static char backSlash = '\\';
+    private final static char forwardSlash = '/';
 
     protected int maxBufSize = -1;
 
@@ -91,10 +96,10 @@ public class SerializeWriter extends Writer {
         if (!state) {
             features |= feature.getMask();
             // 由于枚举序列化特性WriteEnumUsingToString和WriteEnumUsingName不能共存，需要检查
-            if (feature == SerializerFeature.WriteEnumUsingToString) {
-                features &= ~SerializerFeature.WriteEnumUsingName.getMask();
-            } else if (feature == SerializerFeature.WriteEnumUsingName) {
-                features &= ~SerializerFeature.WriteEnumUsingToString.getMask();
+            if (feature == WriteEnumUsingToString) {
+                features &= ~WriteEnumUsingName.getMask();
+            } else if (feature == WriteEnumUsingName) {
+                features &= ~WriteEnumUsingToString.getMask();
             }
         } else {
             features &= ~feature.getMask();
@@ -133,35 +138,35 @@ public class SerializeWriter extends Writer {
     }
 
     final static int nonDirectFeatures = 0 //
-            | SerializerFeature.UseSingleQuotes.mask //
-            | SerializerFeature.BrowserCompatible.mask //
-            | SerializerFeature.PrettyFormat.mask //
-            | SerializerFeature.WriteEnumUsingToString.mask
-            | SerializerFeature.WriteNonStringValueAsString.mask
-            | SerializerFeature.WriteSlashAsSpecial.mask
-            | SerializerFeature.IgnoreErrorGetter.mask
-            | SerializerFeature.WriteClassName.mask
-            | SerializerFeature.NotWriteDefaultValue.mask
+            | UseSingleQuotes.mask //
+            | BrowserCompatible.mask //
+            | PrettyFormat.mask //
+            | WriteEnumUsingToString.mask
+            | WriteNonStringValueAsString.mask
+            | WriteSlashAsSpecial.mask
+            | IgnoreErrorGetter.mask
+            | WriteClassName.mask
+            | NotWriteDefaultValue.mask
             ;
 
     private void computeFeatures() {
-        quoteFieldNames = (this.features & SerializerFeature.QuoteFieldNames.mask) != 0;
-        useSingleQuotes = (this.features & SerializerFeature.UseSingleQuotes.mask) != 0;
-        sortField = (this.features & SerializerFeature.SortField.mask) != 0;
-        disableCircularReferenceDetect = (this.features & SerializerFeature.DisableCircularReferenceDetect.mask) != 0;
-        beanToArray = (this.features & SerializerFeature.BeanToArray.mask) != 0;
-        writeNonStringValueAsString = (this.features & SerializerFeature.WriteNonStringValueAsString.mask) != 0;
-        notWriteDefaultValue = (this.features & SerializerFeature.NotWriteDefaultValue.mask) != 0;
-        writeEnumUsingName = (this.features & SerializerFeature.WriteEnumUsingName.mask) != 0;
-        writeEnumUsingToString = (this.features & SerializerFeature.WriteEnumUsingToString.mask) != 0;
+        quoteFieldNames = (this.features & QuoteFieldNames.mask) != 0;
+        useSingleQuotes = (this.features & UseSingleQuotes.mask) != 0;
+        sortField = (this.features & SortField.mask) != 0;
+        disableCircularReferenceDetect = (this.features & DisableCircularReferenceDetect.mask) != 0;
+        beanToArray = (this.features & BeanToArray.mask) != 0;
+        writeNonStringValueAsString = (this.features & WriteNonStringValueAsString.mask) != 0;
+        notWriteDefaultValue = (this.features & NotWriteDefaultValue.mask) != 0;
+        writeEnumUsingName = (this.features & WriteEnumUsingName.mask) != 0;
+        writeEnumUsingToString = (this.features & WriteEnumUsingToString.mask) != 0;
         writeDirect = quoteFieldNames && (this.features & nonDirectFeatures) == 0 && (beanToArray || writeEnumUsingName);
         keySeperator = useSingleQuotes ? '\'' : '"';
-        browserSecure = (this.features & SerializerFeature.BrowserSecure.mask) != 0;
+        browserSecure = (this.features & BrowserSecure.mask) != 0;
         // 10011111111111111111111111111111111
         // 100000000000010011111111111111111111111111111111
         // 101000000000000000000110000010011111111111111111111111111111111
         final long S0 = 0x4FFFFFFFFL, S1 = 0x8004FFFFFFFFL, S2 = 0x50000304ffffffffL;
-        sepcialBits = browserSecure ? S2 : (this.features & SerializerFeature.WriteSlashAsSpecial.mask) != 0 ? S1 : S0;
+        sepcialBits = browserSecure ? S2 : (this.features & WriteSlashAsSpecial.mask) != 0 ? S1 : S0;
     }
 
     public static void main(String[] args) {
@@ -193,7 +198,7 @@ public class SerializeWriter extends Writer {
             }
         } else {
             if (quoteFieldNames) {
-                writeStringWithDoubleQuote(key, ':');
+//                writeStringWithDoubleQuote(key, ':');
             } else {
 
             }
@@ -320,9 +325,7 @@ public class SerializeWriter extends Writer {
     private void writeStringWithSingleQuote(String text) {
         if (text == null) {
             int newCount = count + 4;
-            if (newCount > buf.length) {
-                expandCapacity(newCount);
-            }
+            expandCapacityIfNecessary(newCount);
             "null".getChars(0, 4, buf, count);
             count = newCount;
             return;
@@ -337,7 +340,7 @@ public class SerializeWriter extends Writer {
                 write('\'');
                 for (int i = 0; i < text.length(); i++) {
                     char ch = text.charAt(i);
-                    if (ch <= 13 || ch == '\\' || ch == '\'' || (ch == '/' && isEnabled(SerializerFeature.WriteSlashAsSpecial))) {
+                    if (ch <= 13 || ch == '\\' || ch == '\'' || (ch == '/' && isEnabled(WriteSlashAsSpecial))) {
                         write('\\');
                         write(replaceChars[(int) ch]);
                     } else {
@@ -361,7 +364,7 @@ public class SerializeWriter extends Writer {
         char lastSpecial = '\0';
         for (int i = start; i < end; i++) {
             char ch = buf[i];
-            if (ch <= 13 || ch == '\\' || ch == '\'' || (ch == '/' && isEnabled(SerializerFeature.WriteSlashAsSpecial))) {
+            if (ch <= 13 || ch == '\\' || ch == '\'' || (ch == '/' && isEnabled(WriteSlashAsSpecial))) {
                 specialCount++;
                 lastSpecialIndex = i;
                 lastSpecial = ch;
@@ -384,7 +387,7 @@ public class SerializeWriter extends Writer {
             end++;
             for (int i = lastSpecialIndex - 2; i >= start ; i--) {
                 char ch = buf[i];
-                if (ch <= 13 || ch == '\\' || ch == '\'' || (ch == '/' && isEnabled(SerializerFeature.WriteSlashAsSpecial))) {
+                if (ch <= 13 || ch == '\\' || ch == '\'' || (ch == '/' && isEnabled(WriteSlashAsSpecial))) {
                     System.arraycopy(buf, i + 1, buf, i + 2, end - i - 1);
                     buf[i] = '\\';
                     buf[i + 1] = replaceChars[(int) ch];
@@ -411,6 +414,29 @@ public class SerializeWriter extends Writer {
         write("null");
     }
 
+    public void writeNull(SerializerFeature feature) {
+        writeNull(0, feature.mask);
+    }
+
+    private void writeNull(int beanFeatures, int feature) {
+        if ((beanFeatures & feature) == 0 && (this.features & feature) == 0) {
+            writeNull();
+            return;
+        }
+
+        if (feature == WriteNullListAsEmpty.mask) {
+            write("[]");
+        } else if (feature == WriteNullStringAsEmpty.mask) {
+            write("");
+        } else if (feature == WriteNullBooleanAsFalse.mask) {
+            write("false");
+        } else if (feature == WriteNullNumberAsZero.mask) {
+            write('0');
+        } else {
+            writeNull();
+        }
+    }
+
     public void write(String text, int off, int len) {
         int newCount = count + len;
         if (newCount > buf.length) {
@@ -429,5 +455,290 @@ public class SerializeWriter extends Writer {
         }
         text.getChars(off, off + len, buf, count);
         count = newCount;
+    }
+
+    public void writeString(String text) {
+        if (useSingleQuotes) {
+            writeStringWithSingleQuote(text);
+        } else {
+            writeStringWithDoubleQuote(text, (char) 0);
+        }
+    }
+
+    private void writeStringWithDoubleQuote(String text, char seperator) {
+        if (text == null) {
+            writeNull();
+            if (seperator != 0) {
+                write(seperator);
+            }
+            return;
+        }
+
+        int len = text.length();
+        int newCount = count + len + 2;
+        if (seperator != 0) {
+            newCount++;
+        }
+
+        if (newCount > buf.length) {
+            if (writer == null) {
+                expandCapacity(newCount);
+            } else {
+                writeDoubleQuete();
+                for (int i = 0; i < text.length(); i++) {
+                    char ch = text.charAt(i);
+                    if (isEnabled(BrowserSecure)) {
+                        if (ch == '(' || ch == ')' || ch == '<' || ch == '>') {
+                            writeUnicode(ch);
+                            continue;
+                        }
+                    }
+
+                    if (isEnabled(BrowserCompatible)) {
+                        if (ch == '\b' || ch == '\f' || ch == '\n' || ch == '\r' || ch == '\t' || ch == '"' || ch == '/' || ch == '\\') {
+                            writeReplaceChar(ch);
+                            continue;
+                        }
+                        if (ch < 32) {
+                            writeAscii(ch);
+                            continue;
+                        }
+
+                        if (ch >= 127) {
+                            writeUnicode(ch);
+                            continue;
+                        }
+                    } else {
+                        if (ch < specicalFlags_doubleQuotes.length && specicalFlags_doubleQuotes[ch] != 0 || (ch == forwardSlash && isEnabled(WriteSlashAsSpecial))) {
+                            if (specicalFlags_doubleQuotes[ch] == 4) {
+                                writeUnicode(ch);
+                            } else {
+                                writeReplaceChar(ch);
+                            }
+                            continue;
+                        }
+                    }
+                    write(ch);
+                }
+                writeDoubleQuete();
+                writeSeperatorIfNecessary(seperator);
+            }
+            return;
+        }
+
+        int start = count + 1;
+        int end = start + len;
+        buf[count] = doubleQuete;
+        text.getChars(0, len, buf, start);
+        count = newCount;
+        if (isEnabled(BrowserCompatible)) {
+            int lastSpecialIndex = -1;
+            for (int i = start; i < end; i++) {
+                char ch = buf[i];
+                if (ch == doubleQuete || ch == backSlash || ch == forwardSlash || ch == '\b' || ch == '\f' || ch == '\n' || ch == '\r' || ch == '\t') {
+                    lastSpecialIndex = i;
+                    newCount++;
+                    continue;
+                }
+
+                if (ch < 32 || ch >= 127) {
+                    lastSpecialIndex = i;
+                    newCount += 5;
+                    continue;
+                }
+            }
+            expandCapacity(newCount);
+            count = newCount;
+            for (int i = lastSpecialIndex; i >= start ; i--) {
+                char ch = buf[i];
+                if (ch == '\b' || ch == '\f' || ch == '\n' || ch == '\r' || ch == '\t') {
+                    System.arraycopy(buf, i + 1, buf, i + 2, end - i - 1);
+                    writeReplaceChar(ch);
+                    end++;
+                    continue;
+                }
+
+                if (ch == doubleQuete || ch == backSlash || ch == forwardSlash) {
+                    System.arraycopy(buf, i + 1, buf, i + 2, end - i - 1);
+                    buf[i] = backSlash;
+                    buf[i + 1] = ch;
+                    end++;
+                    continue;
+                }
+
+                if (ch < 32) {
+                    System.arraycopy(buf, i + 1, buf, i + 6, end - i - 1);
+                    writeAscii(ch);
+                    end += 5;
+                    continue;
+                }
+
+                if (ch >= 127) {
+                    System.arraycopy(buf, i + 1, buf, i + 6, end - i - 1);
+                    writeUnicode(ch);
+                    end += 5;
+                }
+            }
+
+            if (seperator != 0) {
+                buf[count - 2] = doubleQuete;
+                buf[count - 1] = seperator;
+            } else {
+                buf[count - 1] = doubleQuete;
+            }
+            return;
+        }
+
+        int specialCount = 0;
+        int lastSpecialIndex = -1;
+        int firstSpecialIndex = -1;
+        char lastSpecial = '\0';
+
+        for (int i = start; i < end; i++) {
+            char ch = buf[i];
+            if (ch >= ']') {
+                if (ch >= 0x7F && (ch == '\u2028' || ch == '\u2029' || ch < 0xA0)) {
+                    firstSpecialIndex = firstSpecialIndex == -1 ? i : firstSpecialIndex;
+                    specialCount++;
+                    lastSpecialIndex = i;
+                    lastSpecial = ch;
+                    newCount += 4;
+                }
+                continue;
+            }
+
+            boolean special = (ch < 64 && (sepcialBits & (1L << ch)) != 0) || ch == backSlash;
+            if (special) {
+                specialCount++;
+                lastSpecialIndex = i;
+                lastSpecial = ch;
+                if (ch == '(' || ch == ')' || ch == '<' || ch == '>' || (ch < specicalFlags_doubleQuotes.length && specicalFlags_doubleQuotes[ch] == 4)) {
+                    newCount += 4;
+                }
+                firstSpecialIndex = firstSpecialIndex == -1 ? i : firstSpecialIndex;
+            }
+        }
+
+        if (specialCount > 0) {
+            newCount += specialCount;
+            expandCapacityIfNecessary(newCount);
+            count = newCount;
+            if (specialCount == 1) {
+                if (lastSpecial == '\u2028') {
+                    int srcPos = lastSpecialIndex + 1;
+                    int destPos = lastSpecialIndex + 6;
+                    int lengthOfCopy = end - lastSpecialIndex - 1;
+                    System.arraycopy(buf, srcPos, buf, destPos, lengthOfCopy);
+                    buf[lastSpecialIndex++] = backSlash;
+                    buf[lastSpecialIndex++] = 'u';
+                    buf[lastSpecialIndex++] = '2';
+                    buf[lastSpecialIndex++] = '0';
+                    buf[lastSpecialIndex++] = '2';
+                    buf[lastSpecialIndex] = '8';
+                } else if (lastSpecial == '\u2029') {
+                    int srcPos = lastSpecialIndex + 1;
+                    int destPos = lastSpecialIndex + 6;
+                    int lengthOfCopy = end - lastSpecialIndex - 1;
+                    System.arraycopy(buf, srcPos, buf, destPos, lengthOfCopy);
+                    buf[lastSpecialIndex++] = backSlash;
+                    buf[lastSpecialIndex++] = 'u';
+                    buf[lastSpecialIndex++] = '2';
+                    buf[lastSpecialIndex++] = '0';
+                    buf[lastSpecialIndex++] = '2';
+                    buf[lastSpecialIndex] = '9';
+                } else if (lastSpecial == '(' || lastSpecial == ')' || lastSpecial == '<' || lastSpecial == '>') {
+                    int srcPos = lastSpecialIndex + 1;
+                    int destPos = lastSpecialIndex + 6;
+                    int lengthOfCopy = end - lastSpecialIndex - 1;
+                    System.arraycopy(buf, srcPos, buf, destPos, lengthOfCopy);
+                    writeUnicode(lastSpecial);
+                } else {
+                    char ch = lastSpecial;
+                    if (ch < specicalFlags_doubleQuotes.length && specicalFlags_doubleQuotes[ch] == 4) {
+                        int srcPos = lastSpecialIndex + 1;
+                        int destPos = lastSpecialIndex + 6;
+                        int lengthOfCopy = end - lastSpecialIndex - 1;
+                        System.arraycopy(buf, srcPos, buf, destPos, lengthOfCopy);
+                        writeUnicode(ch);
+                    } else {
+                        int srcPos = lastSpecialIndex + 1;
+                        int destPos = lastSpecialIndex + 2;
+                        int lengthOfCopy = end - lastSpecialIndex - 1;
+                        System.arraycopy(buf, srcPos, buf, destPos, lengthOfCopy);
+                        writeReplaceChar(lastSpecial);
+                    }
+                }
+            }
+        } else {
+            int textIndex = firstSpecialIndex - start;
+            int bufIndex = firstSpecialIndex;
+            for (int i = textIndex; i < text.length(); i++) {
+                char ch = text.charAt(i);
+                if (browserSecure && (ch == '(' || ch == ')' || ch == '<' || ch == '>')) {
+                    writeUnicode(ch);
+                    end += 5;
+                } else if (ch < specicalFlags_doubleQuotes.length && specicalFlags_doubleQuotes[ch] != 0 || (ch == forwardSlash && isEnabled(WriteSlashAsSpecial))) {
+                    if (specicalFlags_doubleQuotes[ch] == 4) {
+                        writeUnicode(ch);
+                        end += 5;
+                    } else {
+                        writeReplaceChar(ch);
+                        end++;
+                    }
+                } else {
+                    if (ch == '\u2028' || ch == '\u2029') {
+                        buf[bufIndex++] = '\\';
+                        buf[bufIndex++] = 'u';
+                        buf[bufIndex++] = DIGITS[(ch >>> 12) & 15];
+                        buf[bufIndex++] = DIGITS[(ch >>> 8) & 15];
+                        buf[bufIndex++] = DIGITS[(ch >>> 4) & 15];
+                        buf[bufIndex++] = DIGITS[ch & 15];
+                        end += 5;
+                    } else {
+                        buf[bufIndex++] = ch;
+                    }
+                }
+            }
+        }
+
+        if (seperator != 0) {
+            buf[count - 2] = doubleQuete;
+            buf[count - 1] = seperator;
+        } else {
+            buf[count - 1] = doubleQuete;
+        }
+    }
+
+    private void writeAscii(char ch) {
+        write('\\');
+        write('u');
+        write('0');
+        write('0');
+        write(ASCII_CHARS[ch * 2]);
+        write(ASCII_CHARS[ch * 2 + 1]);
+    }
+
+    private void writeSeperatorIfNecessary(int seperator) {
+        if (seperator != 0)
+            write(seperator);
+        
+    }
+
+    private void writeReplaceChar(int ch) {
+        writeBackSlash();
+        write(replaceChars[ch]);
+    }
+
+    private void writeUnicode(char ch) {
+        write('\\');
+        write('u');
+        write(DIGITS[(ch >>> 12) & 15]);
+        write(DIGITS[(ch >>> 8) & 15]);
+        write(DIGITS[(ch >>> 4) & 15]);
+        write(DIGITS[ch & 15]);
+    }
+
+    private void writeDoubleQuete() {
+        write(doubleQuete);
     }
 }
