@@ -174,23 +174,40 @@ public class FastRemoveList<T> {
 
     @Test
     public void test2() {
-        int cnt = 100;
+        long max = 0;
+        long min = 0;
+        long total = 0;
+        int loop = 10000;
+
+        for (int i = 0; i < loop; i++) {
+            long time = test();
+            max = Math.max(time, max);
+            min = min == 0 ? time : Math.min(min, time);
+            total += time;
+        }
+
+        System.out.println("max:" + max);
+        System.out.println("min:" + min);
+        System.out.println("total:" + total);
+        System.out.println("avg:" + max / loop);
+    }
+
+    public long test() {
+        int cnt = 40;
         List<Vo> list = new ArrayList<>();
         Set<Vo> set = Sets.newHashSet();
         for (int i = 0; i < cnt; i++) {
             list.add(new Vo(String.valueOf(i)));
             set.add(new Vo(String.valueOf(i)));
         }
-
         Stopwatch stopwatch = Stopwatch.createStarted();
         Iterator<Vo> iterator = set.iterator();
         while (iterator.hasNext()) {
             Vo next = iterator.next();
             list.remove(next);
         }
-
-        System.out.println(list);
         stopwatch.stop();
-        System.out.println(stopwatch.elapsed(TimeUnit.MICROSECONDS));
+        long elapsed = stopwatch.elapsed(TimeUnit.NANOSECONDS);
+        return elapsed;
     }
 }

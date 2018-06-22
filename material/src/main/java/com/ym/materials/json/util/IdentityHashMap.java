@@ -84,4 +84,14 @@ public class IdentityHashMap<K, V> {
     public void clear() {
         Arrays.fill(buckets, null);
     }
+
+    public static void main(String[] args) {
+        int tableSize = 16;
+        int leftMostOnePos = 31 - Integer.numberOfLeadingZeros(tableSize) + 1; // 最左侧1的位置
+        tableSize = (1 << leftMostOnePos);
+        System.out.println(tableSize);
+
+        System.out.println(Integer.toBinaryString(100));
+        System.out.println(Integer.toBinaryString(-100));
+    }
 }
