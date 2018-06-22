@@ -2,12 +2,9 @@ package com.ym.materials.optimize.fastRemoveList;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Sets;
-import com.ym.materials.json.JSON;
-import com.ym.materials.json.util.IdentityHashMap;
 import org.junit.Test;
 import sun.misc.Unsafe;
 
-import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -15,10 +12,12 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by ym on 2018/6/3.
  */
-public class FastRemoveList0<T> {
+public class FastRemoveList01<T> {
 
     private final static Unsafe UNSAFE;
     private final static long arrayListEleDataOffset;
+    private final static long arrayListSizeOffset;
+
 
     static {
         try {
@@ -26,6 +25,7 @@ public class FastRemoveList0<T> {
             field.setAccessible(true);
             UNSAFE = (Unsafe) field.get(null);
             arrayListEleDataOffset = UNSAFE.objectFieldOffset(ArrayList.class.getDeclaredField("elementData"));
+            arrayListSizeOffset = UNSAFE.objectFieldOffset(ArrayList.class.getDeclaredField("size"));
         } catch (Exception e) {
             throw new Error(e);
         }
@@ -37,6 +37,7 @@ public class FastRemoveList0<T> {
     private boolean singleWord = true; // 是否只有一个word
     private long firstWord; // 多数场景下 只有一个word 缓存以提升性能
 
+    private List<T> originalArrayList;
     private int originalSize; // 原始列表size
     private Object[] elementData; // 原始列表内部元素数组
     private int size;
@@ -44,11 +45,12 @@ public class FastRemoveList0<T> {
 
     private final static ArrayList EMPTY = new ArrayList();
 
-    public static <T> FastRemoveList0<T> of(List<T> originalArrayList) {
+    public static <T> FastRemoveList01<T> of(List<T> originalArrayList) {
         if (!(originalArrayList instanceof ArrayList)) {
             throw new RuntimeException("not support");
         }
-        FastRemoveList0<T> fastRemoveList = new FastRemoveList0<>();
+        FastRemoveList01<T> fastRemoveList = new FastRemoveList01<>();
+        fastRemoveList.originalArrayList = originalArrayList;
         int size = originalArrayList.size();
         fastRemoveList.originalSize = fastRemoveList.size = size;
         Object[] originObjectArr = (Object[]) UNSAFE.getObject(originalArrayList, arrayListEleDataOffset); // 获取原始数组
@@ -68,7 +70,7 @@ public class FastRemoveList0<T> {
         private final int indexMask;
 
         private SimpleMap() {
-            throw new RuntimeException("not surport");
+            throw new RuntimeException("not support");
         }
 
         public SimpleMap(int tableSize) {
@@ -122,7 +124,7 @@ public class FastRemoveList0<T> {
         }
     }
 
-    public FastRemoveList0() {
+    public FastRemoveList01() {
     }
 
     private void initWords() {
@@ -166,18 +168,19 @@ public class FastRemoveList0<T> {
         return size == 0;
     }
 
-    public ArrayList<T> getRemainList() {
+    public List<T> getRemainList() {
         if (isEmpty()) {
             return EMPTY;
         }
 
-        ArrayList list = new ArrayList(size);
+        Object[] remainEles = new Object[size];
         long offset;
+        int next = 0;
         if (singleWord) {
             for (int i = 0; i < originalSize; i++) {
                 offset = (1L << i);
                 if ((firstWord & offset) != offset) { // 未被标记删除
-                    list.add(elementData[i]);
+                    remainEles[next++] = elementData[i];
                 }
             }
         } else {
@@ -186,15 +189,19 @@ public class FastRemoveList0<T> {
                 long word = words[wordIndex];
                 offset = (1L << i);
                 if ((word & offset) != offset) { // 未被标记删除
-                    list.add(elementData[i]);
+                    remainEles[next++] = elementData[i];
                 }
             }
         }
-        return list;
+
+        ArrayList<T> remainList = new ArrayList<>(0);
+        UNSAFE.putInt(remainList, arrayListSizeOffset, size);
+        UNSAFE.putObject(remainList, arrayListEleDataOffset, remainEles);
+        return remainList;
     }
 
     public long test() {
-        int cnt = 20000;
+        int cnt = 10000;
         ArrayList<Vo> list = new ArrayList<>();
         Set<Vo> set = Sets.newHashSet();
         for (int i = 0; i < cnt; i++) {
@@ -206,13 +213,13 @@ public class FastRemoveList0<T> {
         }
 
         Stopwatch stopwatch = Stopwatch.createStarted();
-        FastRemoveList0<Vo> fastRemoveList = FastRemoveList0.of(list);
+        FastRemoveList01<Vo> fastRemoveList = FastRemoveList01.of(list);
         Iterator<Vo> iterator = set.iterator();
         while (iterator.hasNext()) {
             Vo next = iterator.next();
             fastRemoveList.remove(next);
         }
-        ArrayList<Vo> remainList = fastRemoveList.getRemainList();
+        List<Vo> remainList = fastRemoveList.getRemainList();
         stopwatch.stop();
         long time = stopwatch.elapsed(TimeUnit.NANOSECONDS);
         return time;
@@ -223,7 +230,7 @@ public class FastRemoveList0<T> {
         long max = 0;
         long min = 0;
         long total = 0;
-        int loop = 1000;
+        int loop = 100;
         for (int i = 0; i < loop; i++) {
             long time = test();
             max = Math.max(time, max);
@@ -238,15 +245,6 @@ public class FastRemoveList0<T> {
 
     }
 
-    private final static long sizeOffset;
-
-    static {
-        try {
-            sizeOffset = UNSAFE.objectFieldOffset(ArrayList.class.getDeclaredField("size"));
-        } catch (NoSuchFieldException e) {
-            throw new Error(e);
-        }
-    }
     @Test
     public void test3() throws Exception {
         Integer[] arr = new Integer[16];
@@ -255,8 +253,17 @@ public class FastRemoveList0<T> {
         }
 
         ArrayList<Integer> integers = new ArrayList<>(32);
-        UNSAFE.putInt(integers, sizeOffset, 16);
+        UNSAFE.putInt(integers, arrayListSizeOffset, 16);
         UNSAFE.putObject(integers, arrayListEleDataOffset, arr);
         System.out.println(com.alibaba.fastjson.JSON.toJSONString(integers));
+    }
+
+    @Test
+    public void test4() throws Exception {
+        List<Integer> list = new ArrayList<>(0);
+        list.add(1);
+
+        List<Integer> list2 = new ArrayList<>(0);
+        list2.add(1);
     }
 }

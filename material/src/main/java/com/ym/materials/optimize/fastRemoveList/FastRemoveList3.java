@@ -13,7 +13,7 @@ import static java.lang.Long.SIZE;
 /**
  * Created by ym on 2018/6/3.
  */
-public class FastRemoveList<T> {
+public class FastRemoveList3<T> {
 
     private final static int PER_WORD_OFFSET = 6; // long型位移量
     private final static int BIT_INDEX_MASK = 63;
@@ -24,15 +24,15 @@ public class FastRemoveList<T> {
     private List<T> targetList;
     private int originalSize;
 
-    public static <T> FastRemoveList<T> of(List<T> targetList) {
-        FastRemoveList<T> fastRemoveList = new FastRemoveList<>();
+    public static <T> FastRemoveList3<T> of(List<T> targetList) {
+        FastRemoveList3<T> fastRemoveList = new FastRemoveList3<>();
         fastRemoveList.targetList = targetList;
         fastRemoveList.originalSize = targetList.size();
         fastRemoveList.initWords(); // 计算words长度
         return fastRemoveList;
     }
 
-    public FastRemoveList() {
+    public FastRemoveList3() {
     }
 
     private void initWords() {
@@ -145,7 +145,7 @@ public class FastRemoveList<T> {
 
     @Test
     public void test1() {
-        int cnt = 10000;
+        int cnt = 100;
         List<Vo> list = new ArrayList<>();
         Set<Vo> set = Sets.newHashSet();
         for (int i = 0; i < cnt; i++) {
@@ -153,7 +153,7 @@ public class FastRemoveList<T> {
             set.add(new Vo(String.valueOf(i)));
         }
 
-        FastRemoveList<Vo> fastRemoveList = FastRemoveList.of(list);
+        FastRemoveList3<Vo> fastRemoveList = FastRemoveList3.of(list);
 
         Stopwatch stopwatch = Stopwatch.createStarted();
         Iterator<Vo> iterator = set.iterator();
@@ -174,44 +174,42 @@ public class FastRemoveList<T> {
 
     @Test
     public void test2() {
-        long max = 0;
-        long min = 0;
-        long total = 0;
-        int loop = 100;
-
-        for (int i = 0; i < loop; i++) {
-            long time = test();
-            max = Math.max(time, max);
-            min = min == 0 ? time : Math.min(min, time);
-            total += time;
-        }
-
-        System.out.println("max:" + max);
-        System.out.println("min:" + min);
-        System.out.println("total:" + total);
-        System.out.println("avg:" + max / loop);
-    }
-
-    public long test() {
-        int cnt = 10000;
+        int cnt = 100;
         List<Vo> list = new ArrayList<>();
         Set<Vo> set = Sets.newHashSet();
         for (int i = 0; i < cnt; i++) {
             list.add(new Vo(String.valueOf(i)));
-            if (i % 10 == 0) {
-                continue;
-            }
             set.add(new Vo(String.valueOf(i)));
         }
+
         Stopwatch stopwatch = Stopwatch.createStarted();
         Iterator<Vo> iterator = set.iterator();
         while (iterator.hasNext()) {
             Vo next = iterator.next();
             list.remove(next);
         }
-        List<Vo> list1 = list;
+
+        System.out.println(list);
         stopwatch.stop();
-        long elapsed = stopwatch.elapsed(TimeUnit.NANOSECONDS);
-        return elapsed;
+        System.out.println(stopwatch.elapsed(TimeUnit.MICROSECONDS));
+    }
+
+    @Test
+    public void test11() throws Exception {
+        int[] arr = new int[16];
+        Arrays.fill(arr, 8);
+        Stopwatch stopwatch = Stopwatch.createStarted();
+        System.arraycopy(arr, 1, arr, 2, 14);
+        stopwatch.stop();
+        System.out.println(stopwatch.elapsed(TimeUnit.MICROSECONDS));
+    }
+
+    @Test
+    public void test12() throws Exception {
+        long l1 = 0;
+        Stopwatch stopwatch = Stopwatch.createStarted();
+        l1 = l1 | (1L << 2);
+        stopwatch.stop();
+        System.out.println(stopwatch.elapsed(TimeUnit.MICROSECONDS));
     }
 }

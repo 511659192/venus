@@ -40,11 +40,18 @@ public class SerializeConfig {
 
     private ObjectSerializer getObjectWriter(Class<?> clazz, boolean create) {
         ObjectSerializer writer = serializers.get(clazz);
-        if (writer == null) {
-            String className = clazz.getName();
-            Class<?> superClass;
-
+        if (writer != null) {
+            return writer;
         }
+        if (create) {
+            writer = createJavaBeanSerializer(clazz);
+            put(clazz, writer);
+        }
+        return writer;
+    }
+
+    private ObjectSerializer createJavaBeanSerializer(Class<?> clazz) {
+
         return null;
     }
 

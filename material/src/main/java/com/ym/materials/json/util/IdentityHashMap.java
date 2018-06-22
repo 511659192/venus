@@ -1,5 +1,6 @@
 package com.ym.materials.json.util;
 
+import javafx.scene.control.Tab;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
@@ -86,12 +87,9 @@ public class IdentityHashMap<K, V> {
     }
 
     public static void main(String[] args) {
-        int tableSize = 16;
-        int leftMostOnePos = 31 - Integer.numberOfLeadingZeros(tableSize) + 1; // 最左侧1的位置
+        int tableSize = 17;
+        int leftMostOnePos = Integer.SIZE - Integer.numberOfLeadingZeros(tableSize); // 最左侧1的位置 计数从1开始
         tableSize = (1 << leftMostOnePos);
         System.out.println(tableSize);
-
-        System.out.println(Integer.toBinaryString(100));
-        System.out.println(Integer.toBinaryString(-100));
     }
 }
