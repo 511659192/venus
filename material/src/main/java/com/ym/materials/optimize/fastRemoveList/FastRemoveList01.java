@@ -24,8 +24,8 @@ public class FastRemoveList01<T> {
             Field field = Unsafe.class.getDeclaredField("theUnsafe");
             field.setAccessible(true);
             UNSAFE = (Unsafe) field.get(null);
-            arrayListEleDataOffset = UNSAFE.objectFieldOffset(ArrayList.class.getDeclaredField("elementData"));
-            arrayListSizeOffset = UNSAFE.objectFieldOffset(ArrayList.class.getDeclaredField("size"));
+            arrayListEleDataOffset = UNSAFE.objectFieldOffset(ArrayList.class.getDeclaredField("elementData")); // 原始数组元素地址偏移量
+            arrayListSizeOffset = UNSAFE.objectFieldOffset(ArrayList.class.getDeclaredField("size")); // 原始列表数组长度地址偏移量
         } catch (Exception e) {
             throw new Error(e);
         }
@@ -37,20 +37,16 @@ public class FastRemoveList01<T> {
     private boolean singleWord = true; // 是否只有一个word
     private long firstWord; // 多数场景下 只有一个word 缓存以提升性能
 
-    private List<T> originalArrayList;
     private int originalSize; // 原始列表size
-    private Object[] elementData; // 原始列表内部元素数组
-    private int size;
-    private SimpleMap<Object, Integer> index;
-
-    private final static ArrayList EMPTY = new ArrayList();
+    private Object[] elementData; // 指向原始列表内部元素数组
+    private int size; // 删除后的大小
+    private SimpleMap<Object, Integer> index; // 元素索引
 
     public static <T> FastRemoveList01<T> of(List<T> originalArrayList) {
         if (!(originalArrayList instanceof ArrayList)) {
             throw new RuntimeException("not support");
         }
         FastRemoveList01<T> fastRemoveList = new FastRemoveList01<>();
-        fastRemoveList.originalArrayList = originalArrayList;
         int size = originalArrayList.size();
         fastRemoveList.originalSize = fastRemoveList.size = size;
         Object[] originObjectArr = (Object[]) UNSAFE.getObject(originalArrayList, arrayListEleDataOffset); // 获取原始数组
@@ -65,7 +61,6 @@ public class FastRemoveList01<T> {
     }
 
     private final static class SimpleMap<K, V> {
-
         private final Entry<K, V>[] buckets;
         private final int indexMask;
 
@@ -73,8 +68,9 @@ public class FastRemoveList01<T> {
             throw new RuntimeException("not support");
         }
 
-        public SimpleMap(int tableSize) {
+        public SimpleMap(int tableSize) { //
             if ((tableSize & (tableSize - 1)) != 0) { // 2的次方
+                // 找到最近的2的次方
                 int leftMostOnePos = Integer.SIZE - Integer.numberOfLeadingZeros(tableSize); // 最左侧1的位置
                 tableSize = (1 << leftMostOnePos);
             }
@@ -154,7 +150,7 @@ public class FastRemoveList01<T> {
         } else {
             int wordIndex = wordIndex(index);
             long word = words[wordIndex]; // 现有值
-            word |= 1L << index; // 计算新值
+            word |= (1L << index); // 计算新值
             words[wordIndex] = word; // 替换现有值
         }
         size--;
@@ -170,7 +166,7 @@ public class FastRemoveList01<T> {
 
     public List<T> getRemainList() {
         if (isEmpty()) {
-            return EMPTY;
+            return null;
         }
 
         Object[] remainEles = new Object[size];
@@ -195,13 +191,12 @@ public class FastRemoveList01<T> {
         }
 
         ArrayList<T> remainList = new ArrayList<>(0);
-        UNSAFE.putInt(remainList, arrayListSizeOffset, size);
-        UNSAFE.putObject(remainList, arrayListEleDataOffset, remainEles);
+        UNSAFE.putInt(remainList, arrayListSizeOffset, size); // 操作内存设置size的大小
+        UNSAFE.putObject(remainList, arrayListEleDataOffset, remainEles); // 操作内存设置数组元素
         return remainList;
     }
 
-    public long test() {
-        int cnt = 10000;
+    public long testFastRemoveList() {
         ArrayList<Vo> list = new ArrayList<>();
         Set<Vo> set = Sets.newHashSet();
         for (int i = 0; i < cnt; i++) {
@@ -211,7 +206,6 @@ public class FastRemoveList01<T> {
             }
             set.add(new Vo(String.valueOf(i)));
         }
-
         Stopwatch stopwatch = Stopwatch.createStarted();
         FastRemoveList01<Vo> fastRemoveList = FastRemoveList01.of(list);
         Iterator<Vo> iterator = set.iterator();
@@ -225,14 +219,18 @@ public class FastRemoveList01<T> {
         return time;
     }
 
+    private int cnt = 10;
+    private int loop = 10;
+
     @Test
     public void test1() {
         long max = 0;
         long min = 0;
         long total = 0;
-        int loop = 100;
+        testFastRemoveList();
         for (int i = 0; i < loop; i++) {
-            long time = test();
+            long time = testFastRemoveList();
+//            long time = testArrayList();
             max = Math.max(time, max);
             min = min == 0 ? time : Math.min(min, time);
             total += time;
@@ -242,28 +240,48 @@ public class FastRemoveList01<T> {
         System.out.println("min:" + min);
         System.out.println("total:" + total);
         System.out.println("avg:" + max / loop);
-
     }
 
     @Test
-    public void test3() throws Exception {
-        Integer[] arr = new Integer[16];
-        for (int i = 0; i < 16; i++) {
-            arr[i] = i;
+    public void test2() {
+        long max = 0;
+        long min = 0;
+        long total = 0;
+        testArrayList();
+        for (int i = 0; i < loop; i++) {
+            long time = testArrayList();
+            max = Math.max(time, max);
+            min = min == 0 ? time : Math.min(min, time);
+            total += time;
         }
 
-        ArrayList<Integer> integers = new ArrayList<>(32);
-        UNSAFE.putInt(integers, arrayListSizeOffset, 16);
-        UNSAFE.putObject(integers, arrayListEleDataOffset, arr);
-        System.out.println(com.alibaba.fastjson.JSON.toJSONString(integers));
+        System.out.println("max:" + max);
+        System.out.println("min:" + min);
+        System.out.println("total:" + total);
+        System.out.println("avg:" + max / loop);
     }
 
-    @Test
-    public void test4() throws Exception {
-        List<Integer> list = new ArrayList<>(0);
-        list.add(1);
-
-        List<Integer> list2 = new ArrayList<>(0);
-        list2.add(1);
+    public long testArrayList() {
+        ArrayList<Vo> list = new ArrayList<>();
+        Set<Vo> set = Sets.newHashSet();
+        for (int i = 0; i < cnt; i++) {
+            list.add(new Vo(String.valueOf(i)));
+            if (i % 10 == 0) {
+                continue;
+            }
+            set.add(new Vo(String.valueOf(i)));
+        }
+        Stopwatch stopwatch = Stopwatch.createStarted();
+        Iterator<Vo> iterator = set.iterator();
+        while (iterator.hasNext()) {
+            Vo next = iterator.next();
+            list.remove(next);
+        }
+        ArrayList<Vo> list1 = list;
+        stopwatch.stop();
+        long time = stopwatch.elapsed(TimeUnit.NANOSECONDS);
+        return time;
     }
+
+
 }

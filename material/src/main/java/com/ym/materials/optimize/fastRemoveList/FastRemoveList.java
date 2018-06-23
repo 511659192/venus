@@ -193,7 +193,7 @@ public class FastRemoveList<T> {
     }
 
     public long test() {
-        int cnt = 10000;
+        int cnt = 2000;
         List<Vo> list = new ArrayList<>();
         Set<Vo> set = Sets.newHashSet();
         for (int i = 0; i < cnt; i++) {

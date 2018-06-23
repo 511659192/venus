@@ -4,6 +4,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
 
 /**
  * Created by ym on 2018/6/8.
@@ -12,6 +13,8 @@ public class Main {
 
     @Test
     public void main() throws InterruptedException {
+        Executors.newFixedThreadPool(1);
+
         final int THREADS_COUNT = 20;
         final int LOOP_COUNT = 100000;
 

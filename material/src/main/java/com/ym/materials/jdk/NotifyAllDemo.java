@@ -1,17 +1,18 @@
 package com.ym.materials.jdk;
 
-import org.junit.Test;
-
-import java.util.Objects;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by ym on 2018/6/14.
  */
-public class ThreadTest {
+public class NotifyAllDemo {
 
+    /**
+     * notifyAll后 程序将依次执行
+     * @param args
+     * @throws InterruptedException
+     */
     public static void main(String[] args) throws InterruptedException {
         final Object lock = new Object();
         final AtomicInteger cnt = new AtomicInteger(0);
