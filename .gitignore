@@ -16,5 +16,5 @@
 */.settings/*
 .settings/
 META-INF/
-
+misc.xml
 *.MF
