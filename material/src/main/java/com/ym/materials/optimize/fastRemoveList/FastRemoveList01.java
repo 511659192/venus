@@ -68,12 +68,18 @@ public class FastRemoveList01<T> {
             throw new RuntimeException("not support");
         }
 
+        static final int tableSizeFor(int cap) {
+            int n = cap - 1;
+            n |= n >>> 1;
+            n |= n >>> 2;
+            n |= n >>> 4;
+            n |= n >>> 8;
+            n |= n >>> 16;
+            return (n < 0) ? 1 : n + 1;
+        }
+
         public SimpleMap(int tableSize) { //
-            if ((tableSize & (tableSize - 1)) != 0) { // 2的次方
-                // 找到最近的2的次方
-                int leftMostOnePos = Integer.SIZE - Integer.numberOfLeadingZeros(tableSize); // 最左侧1的位置
-                tableSize = (1 << leftMostOnePos);
-            }
+            tableSize = tableSizeFor(tableSize);
             this.indexMask = tableSize - 1;
             this.buckets = new Entry[tableSize];
         }
@@ -180,12 +186,15 @@ public class FastRemoveList01<T> {
                 }
             }
         } else {
-            for (int i = 0; i < originalSize; i++) {
+            for (int i = 0; i < originalSize;) {
                 int wordIndex = wordIndex(i);
                 long word = words[wordIndex];
-                offset = (1L << i);
-                if ((word & offset) != offset) { // 未被标记删除
-                    remainEles[next++] = elementData[i];
+                int len = Math.min(64, originalSize - i);
+                for (int j = 0; j < len; j++, i++) {
+                    offset = (1L << i);
+                    if ((word & offset) != offset) { // 未被标记删除
+                        remainEles[next++] = elementData[i];
+                    }
                 }
             }
         }
@@ -215,12 +224,19 @@ public class FastRemoveList01<T> {
         }
         List<Vo> remainList = fastRemoveList.getRemainList();
         stopwatch.stop();
-        long time = stopwatch.elapsed(TimeUnit.NANOSECONDS);
+        long time = stopwatch.elapsed(TimeUnit.MICROSECONDS);
         return time;
     }
 
-    private int cnt = 10;
-    private int loop = 10;
+    private int cnt = 100000;
+    private int loop = 100;
+
+    @Test
+    public void test() throws Exception {
+//        test2();
+        test1();
+    }
+
 
     @Test
     public void test1() {
@@ -238,8 +254,8 @@ public class FastRemoveList01<T> {
 
         System.out.println("max:" + max);
         System.out.println("min:" + min);
-        System.out.println("total:" + total);
-        System.out.println("avg:" + max / loop);
+//        System.out.println("total:" + total);
+        System.out.println("avg:" + total / loop);
     }
 
     @Test
@@ -257,8 +273,8 @@ public class FastRemoveList01<T> {
 
         System.out.println("max:" + max);
         System.out.println("min:" + min);
-        System.out.println("total:" + total);
-        System.out.println("avg:" + max / loop);
+//        System.out.println("total:" + total);
+        System.out.println("avg:" + total / loop);
     }
 
     public long testArrayList() {
@@ -279,7 +295,7 @@ public class FastRemoveList01<T> {
         }
         ArrayList<Vo> list1 = list;
         stopwatch.stop();
-        long time = stopwatch.elapsed(TimeUnit.NANOSECONDS);
+        long time = stopwatch.elapsed(TimeUnit.MICROSECONDS);
         return time;
     }
 

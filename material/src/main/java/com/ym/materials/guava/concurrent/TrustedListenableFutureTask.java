@@ -15,10 +15,10 @@ public class TrustedListenableFutureTask<T> extends AbstractFuture.TrustedFuture
         return new TrustedListenableFutureTask<V>(Executors.callable(runnable, result));
     }
 
-    @Override
-    public void addListener(Runnable listener, Executor executor) {
-
-    }
+//    @Override
+//    public void addListener(Runnable listener, Executor executor) {
+//
+//    }
 
     @Override
     public void run() {

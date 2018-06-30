@@ -71,11 +71,18 @@ public class FastRemoveList0<T> {
             throw new RuntimeException("not surport");
         }
 
+        static final int tableSizeFor(int cap) {
+            int n = cap - 1;
+            n |= n >>> 1;
+            n |= n >>> 2;
+            n |= n >>> 4;
+            n |= n >>> 8;
+            n |= n >>> 16;
+            return (n < 0) ? 1 : n + 1;
+        }
+
         public SimpleMap(int tableSize) {
-            if ((tableSize & (tableSize - 1)) != 0) { // 2的次方
-                int leftMostOnePos = Integer.SIZE - Integer.numberOfLeadingZeros(tableSize); // 最左侧1的位置
-                tableSize = (1 << leftMostOnePos);
-            }
+            tableSize = tableSizeFor(tableSize);
             this.indexMask = tableSize - 1;
             this.buckets = new Entry[tableSize];
         }
@@ -181,12 +188,15 @@ public class FastRemoveList0<T> {
                 }
             }
         } else {
-            for (int i = 0; i < originalSize; i++) {
+            for (int i = 0; i < originalSize;) {
                 int wordIndex = wordIndex(i);
                 long word = words[wordIndex];
-                offset = (1L << i);
-                if ((word & offset) != offset) { // 未被标记删除
-                    list.add(elementData[i]);
+                int len = Math.min(64, originalSize - i);
+                for (int j = 0; j < len; j++, i++) {
+                    offset = (1L << i);
+                    if ((word & offset) != offset) { // 未被标记删除
+                        list.add(elementData[i]);
+                    }
                 }
             }
         }
@@ -194,7 +204,7 @@ public class FastRemoveList0<T> {
     }
 
     public long test() {
-        int cnt = 20000;
+        int cnt = 1;
         ArrayList<Vo> list = new ArrayList<>();
         Set<Vo> set = Sets.newHashSet();
         for (int i = 0; i < cnt; i++) {
@@ -246,17 +256,5 @@ public class FastRemoveList0<T> {
         } catch (NoSuchFieldException e) {
             throw new Error(e);
         }
-    }
-    @Test
-    public void test3() throws Exception {
-        Integer[] arr = new Integer[16];
-        for (int i = 0; i < 16; i++) {
-            arr[i] = i;
-        }
-
-        ArrayList<Integer> integers = new ArrayList<>(32);
-        UNSAFE.putInt(integers, sizeOffset, 16);
-        UNSAFE.putObject(integers, arrayListEleDataOffset, arr);
-        System.out.println(com.alibaba.fastjson.JSON.toJSONString(integers));
     }
 }

@@ -6,21 +6,25 @@ import java.io.Closeable;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.lang.reflect.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public class TypeDemo {
 
+
     @Test
-    public void testClass() throws Exception {
-        class ClassType<T> {
-
-        };
-
-        ClassType<String> classType = new ClassType<String>();
+    public void test() throws Exception {
+        List<String> list = new ArrayList<>();
+        Method method = list.getClass().getDeclaredMethod("add", new Class[]{Object.class});
+        method.invoke(list, 1);
+        method.invoke(list, 2);
+        for (Object s : list) {
+            System.out.println(s);
+        }
+        System.out.println(list.get(0));
     }
-
 
     class Person {
 
