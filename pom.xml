@@ -10,6 +10,7 @@
     <modules>
         <module>material</module>
         <module>springBoot2</module>
+        <module>openSource</module>
     </modules>
     <packaging>pom</packaging>
 
