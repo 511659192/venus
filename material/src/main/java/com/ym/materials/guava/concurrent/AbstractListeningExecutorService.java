@@ -8,12 +8,12 @@ public abstract class AbstractListeningExecutorService extends AbstractExecutorS
 
     @Override
     protected <T> RunnableFuture<T> newTaskFor(Runnable runnable, T value) {
-        return super.newTaskFor(runnable, value);
+        return TrustedListenableFutureTask.create(runnable, value);
     }
 
     @Override
     protected <T> RunnableFuture<T> newTaskFor(Callable<T> callable) {
-        return super.newTaskFor(callable);
+        return TrustedListenableFutureTask.create(callable);
     }
 
     @Override

@@ -15,6 +15,10 @@ public class TrustedListenableFutureTask<T> extends AbstractFuture.TrustedFuture
         return new TrustedListenableFutureTask<V>(Executors.callable(runnable, result));
     }
 
+    static <V> TrustedListenableFutureTask<V> create(Callable<V> callable) {
+        return new TrustedListenableFutureTask<>(callable);
+    }
+
 //    @Override
 //    public void addListener(Runnable listener, Executor executor) {
 //
@@ -22,7 +26,11 @@ public class TrustedListenableFutureTask<T> extends AbstractFuture.TrustedFuture
 
     @Override
     public void run() {
-
+        InterruptibleTask<T> localTask = this.task;
+        if (localTask != null) {
+            localTask.run();
+        }
+        this.task = null;
     }
 
     @Override

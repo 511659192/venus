@@ -31,7 +31,7 @@ abstract class InterruptibleTask<T> extends AtomicReference<Runnable> implements
             error = throwable;
         } finally {
             if (!compareAndSet(thread, DONE)) {
-                while (get() == INTERRUPTING) {
+                while (get() == INTERRUPTING) { // 这段代码 似乎没有出口
                     Thread.yield();
                 }
             }

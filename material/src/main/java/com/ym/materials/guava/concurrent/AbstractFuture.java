@@ -1,6 +1,5 @@
 package com.ym.materials.guava.concurrent;
 
-import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sun.misc.Unsafe;
@@ -11,6 +10,7 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
+import java.util.concurrent.locks.LockSupport;
 
 import static com.google.common.base.Throwables.throwIfUnchecked;
 import static java.util.concurrent.atomic.AtomicReferenceFieldUpdater.newUpdater;
@@ -70,7 +70,59 @@ public abstract class AbstractFuture<T> extends FluentFuture<T> {
     }
 
     private static void complete(AbstractFuture<?> future) {
-        // TODO: 2018/6/28
+        Listener next = null;
+        out:
+        for (;;) {
+            future.releaseWaiters();
+            future.afterDone();
+            next = future.clearListeners(next);
+            future = null;
+            while (next != null) {
+                Listener current = next;
+                next = next.next;
+                Runnable task = current.task;
+                if (task instanceof SetFuture) {
+                    SetFuture<?> setFuture = (SetFuture<?>) task;
+                    future = setFuture.owner;
+                    if (future.value == setFuture) {
+                        Object valueToSet = getFutureValue(setFuture.future);
+                        if (ATOMIC_HELPER.casValue(future, setFuture, valueToSet)) {
+                            continue out;
+                        }
+                    }
+                } else {
+                    executeListener(task, current.executor);
+                }
+            }
+            break;
+        }
+    }
+
+    private Listener clearListeners(Listener next) { // 这里传入的是空
+        Listener head;
+        do {
+            head = listeners;
+        } while (!ATOMIC_HELPER.casListeners(this, head, Listener.TOMBSTONE));
+        Listener reversedList = next;
+        for (;head != null; head = head.next) {
+            Listener tmp = head;
+            tmp.next = reversedList;
+            reversedList = tmp;
+        }
+        return reversedList;
+    }
+
+    private void afterDone() {
+    }
+
+    private void releaseWaiters() {
+        Waiter head;
+        do {
+            head = waiters;
+        } while (!ATOMIC_HELPER.casWaiters(this, head, Waiter.TOMBSTONE));
+        for (Waiter current = head; current != null; current  = current.next) {
+            current.unpark();
+        }
     }
 
     protected boolean set(T value) {
@@ -307,9 +359,24 @@ public abstract class AbstractFuture<T> extends FluentFuture<T> {
     }
 
     private static final class Waiter {
-
+        static final Waiter TOMBSTONE = new Waiter(false);
         volatile Thread thread;
         volatile Waiter next;
+
+        Waiter(boolean unused) {
+        }
+
+        void setNext(Waiter next) {
+            ATOMIC_HELPER.putNext(this, next);
+        }
+
+        void unpark() {
+            Thread thread = this.thread;
+            if (thread != null) {
+                thread = null;
+                LockSupport.unpark(thread);
+            }
+        }
     }
 
     private static final class Listener {
@@ -321,6 +388,68 @@ public abstract class AbstractFuture<T> extends FluentFuture<T> {
         public Listener(Runnable task, Executor executor) {
             this.task = task;
             this.executor = executor;
+        }
+    }
+
+    private static final class SetFuture<T> implements Runnable {
+        final AbstractFuture<T> owner;
+        final ListenableFuture<? extends T> future;
+
+        public SetFuture(AbstractFuture<T> owner, ListenableFuture<? extends T> future) {
+            this.owner = owner;
+            this.future = future;
+        }
+
+        @Override
+        public void run() {
+            if (owner.value != this) {
+                return;
+            }
+            Object valueToSet = getFutureValue(future);
+            if (ATOMIC_HELPER.casValue(owner, this, valueToSet)) {
+                complete(owner);
+            }
+            
+        }
+    }
+
+    private static Object getFutureValue(ListenableFuture<?> future) {
+        Object valueToSet;
+        if (future instanceof TrustedFuture) {
+            Object v = ((AbstractFuture) future).value;
+            if (v instanceof Cancellation) {
+                Cancellation cancellation = (Cancellation) v;
+            }
+        }
+
+        // TODO: 2018/7/1
+        return null;
+    }
+
+    private static final boolean GENERATE_CANCELLATION_CAUSES =
+            Boolean.parseBoolean(
+                    System.getProperty("guava.concurrent.generate_cancellation_cause", "false"));
+
+    private static final class Cancellation {
+        static final Cancellation CAUSELESS_INTERRUPTED;
+        static final Cancellation CAUSELESS_CANCELLED;
+
+        static {
+            if (GENERATE_CANCELLATION_CAUSES) {
+                CAUSELESS_INTERRUPTED = null;
+                CAUSELESS_CANCELLED = null;
+            } else {
+                CAUSELESS_INTERRUPTED = new Cancellation(false, null);
+                CAUSELESS_CANCELLED = new Cancellation(true, null);
+            }
+        }
+
+        final boolean wasInterrupted;
+        final Throwable cause;
+
+        public Cancellation(boolean wasInterrupted, Throwable cause) {
+            this.wasInterrupted = wasInterrupted;
+            this.cause = cause;
         }
     }
 }
