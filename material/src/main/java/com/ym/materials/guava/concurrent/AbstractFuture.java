@@ -8,11 +8,14 @@ import java.lang.reflect.Field;
 import java.security.AccessController;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.concurrent.locks.LockSupport;
 
 import static com.google.common.base.Throwables.throwIfUnchecked;
+import static com.ym.materials.guava.concurrent.Futures.getDone;
 import static java.util.concurrent.atomic.AtomicReferenceFieldUpdater.newUpdater;
 import static org.junit.Assert.assertNotNull;
 
@@ -419,11 +422,24 @@ public abstract class AbstractFuture<T> extends FluentFuture<T> {
             Object v = ((AbstractFuture) future).value;
             if (v instanceof Cancellation) {
                 Cancellation cancellation = (Cancellation) v;
+                if (cancellation.wasInterrupted) {
+                    v = cancellation.cause != null ? new Cancellation(false, cancellation.cause) : Cancellation.CAUSELESS_CANCELLED;
+                }
+            }
+            return v;
+        } else {
+            try {
+                Object v = getDone(future);
+                valueToSet = v == null ? NULL : v;
+            } catch (ExecutionException e) {
+                valueToSet = new Failure(e.getCause());
+            } catch (CancellationException e) {
+                valueToSet = new Cancellation(false, e);
+            } catch (Throwable t) {
+                valueToSet = new Failure(t);
             }
         }
-
-        // TODO: 2018/7/1
-        return null;
+        return valueToSet;
     }
 
     private static final boolean GENERATE_CANCELLATION_CAUSES =
