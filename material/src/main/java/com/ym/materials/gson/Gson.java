@@ -4,6 +4,7 @@ import com.ym.materials.gson.internal.ConstructorConstructor;
 import com.ym.materials.gson.internal.Excluder;
 import com.ym.materials.gson.internal.bind.JsonAdapterAnnotationTypeAdapterFactory;
 import com.ym.materials.gson.internal.bind.ObjectTypeAdapter;
+import com.ym.materials.gson.internal.bind.ReflectiveTypeAdapterFactory;
 import com.ym.materials.gson.internal.bind.TypeAdapters;
 import com.ym.materials.gson.reflect.TypeToken;
 import com.ym.materials.gson.stream.JsonReader;
@@ -34,7 +35,7 @@ public class Gson {
             = new ThreadLocal<Map<TypeToken<?>, FutureTypeAdapter<?>>>();
     private static final TypeToken<?> NULL_KEY_SURROGATE = TypeToken.get(Object.class);
 
-    final List<TypeAdapterFactory> factories = null;
+    final List<TypeAdapterFactory> factories;
     final List<TypeAdapterFactory> builderFactories;
     private final List<TypeAdapterFactory> builderHierarchyFactories;
     private final List<TypeAdapterFactory> factoriesToBeAdded;
@@ -122,8 +123,8 @@ public class Gson {
         factories.add(TypeAdapters.INTEGER_FACTORY);
         TypeAdapter<Number> longAdapter = longAdapter(longSerializationPolicy);
         factories.add(TypeAdapters.newFactory(long.class, Long.class, longAdapter));
-
-
+        factories.add(new ReflectiveTypeAdapterFactory(constructorConstructor, fieldNamingStrategy, excluder, jsonAdapterFactory));
+        this.factories = Collections.unmodifiableList(factories);
     }
 
     private static TypeAdapter<Number> longAdapter(LongSerializationPolicy longSerializationPolicy) {
