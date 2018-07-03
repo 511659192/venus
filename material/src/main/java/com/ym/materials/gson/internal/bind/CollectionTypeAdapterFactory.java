@@ -30,7 +30,7 @@ public class CollectionTypeAdapterFactory implements TypeAdapterFactory {
     @Override
     public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> typeToken) {
         Type type = typeToken.getType();
-        Class<? extends T> rawType = typeToken.getRawType();
+        Class<? super T> rawType = typeToken.getRawType();
         if (!Collection.class.isAssignableFrom(rawType)) {
             return null;
         }

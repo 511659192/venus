@@ -186,7 +186,7 @@ public class TypeAdapters {
         return new TypeAdapterFactory() {
             @Override
             public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> typeToken) {
-                Class<? extends T> rawType = typeToken.getRawType();
+                Class<? super T> rawType = typeToken.getRawType();
                 return rawType == unboxed || rawType == boxed ? (TypeAdapter<T>) typeAdapter : null;
             }
         };
