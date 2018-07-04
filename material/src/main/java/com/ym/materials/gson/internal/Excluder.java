@@ -1,15 +1,15 @@
 package com.ym.materials.gson.internal;
 
-import com.ym.materials.gson.ExclusionStrategy;
-import com.ym.materials.gson.Gson;
-import com.ym.materials.gson.TypeAdapter;
-import com.ym.materials.gson.TypeAdapterFactory;
+import com.ym.materials.gson.*;
 import com.ym.materials.gson.reflect.TypeToken;
 import com.ym.materials.gson.stream.JsonReader;
 import com.ym.materials.gson.stream.JsonWriter;
 
+import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.nio.file.attribute.FileAttribute;
 import java.util.Collections;
 import java.util.List;
 
@@ -22,6 +22,8 @@ public final class Excluder implements TypeAdapterFactory, Cloneable {
     private boolean serializeInnerClasses = true;
     private List<ExclusionStrategy> serializationStrategies = Collections.emptyList();
     private List<ExclusionStrategy> deserializationStrategies = Collections.emptyList();
+    private int transientOrStatic = Modifier.TRANSIENT | Modifier.STATIC;
+    private boolean requireExpose;
 
     @Override
     public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> type) {
@@ -107,5 +109,28 @@ public final class Excluder implements TypeAdapterFactory, Cloneable {
         } catch (CloneNotSupportedException e) {
             throw new AssertionError(e);
         }
+    }
+
+    public boolean exculdeClass(Class<?> clazz, boolean serialize) {
+        return excludeClassChecks(clazz) || excludeClassInStrategy(clazz, serialize);
+    }
+
+    public boolean exculdeField(Field field, boolean serialize) {
+        Class<?> declaredClass = field.getType();
+        if ((transientOrStatic & field.getModifiers()) != 0 || field.isSynthetic() ||
+                (serializeInnerClasses && isInnerClass(declaredClass)) || isAnonymousOrLocal(declaredClass)) {
+            return true;
+        }
+
+        List<ExclusionStrategy> list = serialize ? serializationStrategies : deserializationStrategies;
+        if (!list.isEmpty()) {
+            FieldAttributes fieldAttributes = new FieldAttributes(field);
+            for (ExclusionStrategy exclusionStrategy : list) {
+                if (exclusionStrategy.shouldSkipField(fieldAttributes)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

@@ -32,7 +32,7 @@ public class TypeToken<T> {
             throw new RuntimeException("missing type parameter.");
         }
         ParameterizedType parameterizedType = (ParameterizedType) superclass;
-        return parameterizedType.getActualTypeArguments()[0];
+        return Types.canonicalize(parameterizedType.getActualTypeArguments()[0]);
     }
 
     public Class<? super T> getRawType() {

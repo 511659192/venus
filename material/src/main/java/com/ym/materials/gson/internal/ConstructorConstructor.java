@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
 public class ConstructorConstructor {
 
     private final Map<Type, InstanceCreator<?>> instanceCreators;
-    private final ReflectionAccessor accessor = ReflectionAccessor.getInsatence();
+    private final ReflectionAccessor accessor = ReflectionAccessor.getInstance();
 
     public ConstructorConstructor(Map<Type, InstanceCreator<?>> instanceCreators) {
         this.instanceCreators = instanceCreators;

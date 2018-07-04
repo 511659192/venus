@@ -311,6 +311,13 @@ public class Types<E> {
         public int hashCode() {
             return componentType.hashCode();
         }
+
+        @Override
+        public String toString() {
+            return "GenericArrayTypeImpl{" +
+                    "componentType=" + componentType +
+                    '}';
+        }
     }
 
     private static final class ParameterizedTypeImpl implements ParameterizedType, Serializable {
@@ -359,6 +366,15 @@ public class Types<E> {
         public int hashCode() {
             return Arrays.hashCode(typeArguments) ^ rawType.hashCode() ^ hashCodeOrZero(ownerType);
         }
+
+        @Override
+        public String toString() {
+            return "ParameterizedTypeImpl{" +
+                    "ownerType=" + ownerType +
+                    ", rawType=" + rawType +
+                    ", typeArguments=" + Arrays.toString(typeArguments) +
+                    '}';
+        }
     }
 
     private static final class WildcardTypeImpl implements WildcardType, Serializable {
@@ -401,6 +417,14 @@ public class Types<E> {
         @Override
         public int hashCode() {
             return (lowerBound != null ? 31 + lowerBound.hashCode() : 1) ^ (31 + upperBound.hashCode());
+        }
+
+        @Override
+        public String toString() {
+            return "WildcardTypeImpl{" +
+                    "upperBound=" + upperBound +
+                    ", lowerBound=" + lowerBound +
+                    '}';
         }
     }
 
