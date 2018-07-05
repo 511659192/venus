@@ -4,6 +4,8 @@ import com.alibaba.fastjson.JSON;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import java.lang.reflect.Array;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
 
@@ -41,9 +43,15 @@ public class GsonDemo {
         new User<ClassRoom>();
 
         Gson gson = new Gson();
-        String strJson = "{name:'david',age:19,room:{roomName:'small',number:1}}";
-        User<ClassRoom> u = gson.fromJson(strJson, new TypeToken<User<ClassRoom>>(){}.getType()); // david->19:[small:1]
-//        User<ClassRoom> u = gson.fromJson(strJson, User.class); // david->19:{roomName=small, number=1.0}
-        System.out.println(gson.toJson(u));
+//        String strJson = "{name:'david',age:19,room:{roomName:'small',number:1}}";
+//        User<ClassRoom> u = gson.fromJson(strJson, new TypeToken<User<ClassRoom>>(){}.getType()); // david->19:[small:1]
+////        User<ClassRoom> u = gson.fromJson(strJson, User.class); // david->19:{roomName=small, number=1.0}
+//        System.out.println(gson.toJson(u));
+        String s = gson.toJson(new String[]{"str ing1", "stri$2"});
+        String[] array = gson.fromJson("  " + s, String[].class);
+        System.out.println(array);
     }
+
+
+
 }
