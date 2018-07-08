@@ -7,12 +7,14 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="material" />
+        <module name="materials2" />
         <module name="openSource" />
         <module name="springBoot2" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="material" target="1.8" />
+      <module name="materials2" target="1.8" />
       <module name="openSource" target="1.8" />
       <module name="springBoot2" target="1.8" />
       <module name="venus" target="1.8" />

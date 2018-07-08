@@ -1,17 +1,16 @@
 package com.ym.materials.gson;
 
+import com.sun.org.apache.regexp.internal.RE;
 import com.ym.materials.gson.internal.ConstructorConstructor;
 import com.ym.materials.gson.internal.Excluder;
-import com.ym.materials.gson.internal.bind.JsonAdapterAnnotationTypeAdapterFactory;
-import com.ym.materials.gson.internal.bind.ObjectTypeAdapter;
-import com.ym.materials.gson.internal.bind.ReflectiveTypeAdapterFactory;
-import com.ym.materials.gson.internal.bind.TypeAdapters;
+import com.ym.materials.gson.internal.Streams;
+import com.ym.materials.gson.internal.bind.*;
 import com.ym.materials.gson.reflect.TypeToken;
 import com.ym.materials.gson.stream.JsonReader;
 import com.ym.materials.gson.stream.JsonToken;
 import com.ym.materials.gson.stream.JsonWriter;
 
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.Type;
 import java.text.DateFormat;
 import java.util.*;
@@ -30,6 +29,7 @@ public class Gson {
     static final boolean DEFAULT_COMPLEX_MAP_KEYS = false;
     static final boolean DEFAULT_SPECIALIZE_FLOAT_VALUES = false;
 
+    private static final String JSON_NON_EXECUTABLE_PREFIX = ")]}'\n";
     private final Map<TypeToken<?>, TypeAdapter<?>> typeTokenCache = new ConcurrentHashMap<TypeToken<?>, TypeAdapter<?>>();
     private final ThreadLocal<Map<TypeToken<?>, FutureTypeAdapter<?>>> calls
             = new ThreadLocal<Map<TypeToken<?>, FutureTypeAdapter<?>>>();
@@ -121,11 +121,67 @@ public class Gson {
         factories.addAll(factoriesToBeAdded);
         factories.add(TypeAdapters.STRING_FACTORY);
         factories.add(TypeAdapters.INTEGER_FACTORY);
-        TypeAdapter<Number> longAdapter = longAdapter(longSerializationPolicy);
-        factories.add(TypeAdapters.newFactory(long.class, Long.class, longAdapter));
+//        TypeAdapter<Number> longAdapter = longAdapter(longSerializationPolicy);
+//        factories.add(TypeAdapters.newFactory(long.class, Long.class, longAdapter));
+        factories.add(new CollectionTypeAdapterFactory(constructorConstructor));
         factories.add(new ReflectiveTypeAdapterFactory(constructorConstructor, fieldNamingStrategy, excluder, jsonAdapterFactory));
         this.factories = Collections.unmodifiableList(factories);
     }
+
+    public <T> T fromJson(String json, Class<T> classOfT) throws JsonSyntaxException {
+        Object object = fromJson(json, (Type) classOfT);
+        return (T) object;
+    }
+
+    public <T> T fromJson(String json, Type typeOfT) throws JsonSyntaxException {
+        if (json == null) {
+            return null;
+        }
+        StringReader reader = new StringReader(json);
+        T target = (T) fromJson(reader, typeOfT);
+        return target;
+    }
+
+    public <T> T fromJson(Reader json, Type typeOfT) throws JsonIOException, JsonSyntaxException {
+        JsonReader jsonReader = newJsonReader(json);
+        T object = (T) fromJson(jsonReader, typeOfT);
+//        assertFullConsumption(object, jsonReader);
+        return object;
+    }
+
+    private JsonReader newJsonReader(Reader reader) {
+        JsonReader jsonReader = new JsonReader(reader);
+        jsonReader.setLenient(true);
+        return jsonReader;
+    }
+
+    public <T> T fromJson(JsonReader reader, Type typeOfT) throws JsonIOException, JsonSyntaxException {
+        boolean isEmpty = false;
+        boolean oldLenient = reader.isLenient();
+        reader.setLenient(true);
+        try {
+            reader.peek();
+            isEmpty = false;
+            TypeToken<T> typeToken = ((TypeToken<T>) TypeToken.get(typeOfT));
+            TypeAdapter<T> typeAdapter = getAdapter(typeToken);
+            T object = typeAdapter.read(reader);
+            return object;
+        } catch (EOFException e) {
+            if (isEmpty) {
+                return null;
+            }
+            throw new RuntimeException(e);
+        } catch (IllegalStateException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (AssertionError error) {
+            throw error;
+        } finally {
+            reader.setLenient(oldLenient);
+        }
+    }
+
 
     private static TypeAdapter<Number> longAdapter(LongSerializationPolicy longSerializationPolicy) {
         if (longSerializationPolicy == LongSerializationPolicy.DEFAULT) {
@@ -174,7 +230,7 @@ public class Gson {
                 return candidate;
             }
         }
-        throw new IllegalArgumentException("gson cannot serialize " + type);
+        throw new IllegalArgumentException("com.ym.materials.gson cannot serialize " + type);
     }
 
     public <T> TypeAdapter<T> getAdapter(Class<T> type) {
@@ -182,7 +238,7 @@ public class Gson {
     }
 
     public <T> TypeAdapter<T> getAdapter(TypeToken<T> type) {
-        TypeAdapter<?> cached = typeTokenCache.get(type == null ? NULL_KEY_SURROGATE : type);
+        TypeAdapter<?> cached = typeTokenCache.get(type == null ? NULL_KEY_SURROGATE : type); // 首先从缓存中获取
         if (cached != null) {
             return (TypeAdapter<T>) cached;
         }
@@ -195,7 +251,10 @@ public class Gson {
             requiresThreadLocalCleanup = true;
         }
 
-        FutureTypeAdapter<T> ongoingCall = (FutureTypeAdapter<T>) threadCalls.get(type);
+        /**
+         * 类似与spring对循环依赖的解决
+         */
+        FutureTypeAdapter<T> ongoingCall = (FutureTypeAdapter<T>) threadCalls.get(type); // 从栈中获取
         if (ongoingCall != null) {
             return ongoingCall;
         }
@@ -212,7 +271,7 @@ public class Gson {
                     return candidate;
                 }
             }
-            throw new IllegalArgumentException("gson can not handle" + type);
+            throw new IllegalArgumentException("com.ym.materials.gson can not handle" + type);
         } finally {
             threadCalls.remove(type);
             if (requiresThreadLocalCleanup) {
@@ -247,4 +306,62 @@ public class Gson {
             delegate.write(out, value);
         }
     }
+
+    public String toJson(Object src) {
+        if (src == null) {
+            return toJson(JsonNull.INSTANCE);
+        }
+        return toJson(src, src.getClass());
+    }
+
+    private String toJson(Object src, Class<?> typeOfSrc) {
+        StringWriter writer = new StringWriter();
+        toJson(src, typeOfSrc, writer);
+        return writer.toString();
+    }
+
+    private void toJson(Object src, Class<?> typeOfSrc, StringWriter writer) {
+        try {
+            JsonWriter jsonWriter = newJsonWriter(Streams.writerForAppendable(writer));
+            toJson(src, typeOfSrc, jsonWriter);
+        } catch (IOException e) {
+            throw new JsonIOException(e);
+        }
+    }
+
+    public void toJson(Object src, Type typeOfSrc, JsonWriter writer) throws JsonIOException {
+        TypeAdapter<?> adapter = getAdapter(TypeToken.get(typeOfSrc));
+        boolean oldLenient = writer.isLenient();
+        writer.setLenient(true);
+        boolean oldHtmlSafe = writer.isHtmlSafe();
+        writer.setHtmlSafe(htmlSafe);
+        boolean oldSerializeNulls = writer.isSerializeNulls();
+        writer.setSerializeNulls(serializeNulls);
+        try {
+            ((TypeAdapter<Object>) adapter).write(writer, src);
+        } catch (IOException e) {
+            throw new JsonIOException(e);
+        } catch (AssertionError error) {
+            throw error;
+        } finally {
+            writer.setLenient(oldLenient);
+            writer.setHtmlSafe(oldHtmlSafe);
+            writer.setSerializeNulls(oldSerializeNulls);
+        }
+    }
+
+
+    public JsonWriter newJsonWriter(Writer writer) throws IOException {
+        if (generateNonExecutableGson) {
+            writer.write(JSON_NON_EXECUTABLE_PREFIX);
+        }
+
+        JsonWriter jsonWriter = new JsonWriter(writer);
+        if (prettyPrinting) {
+            jsonWriter.setIndent("   ");
+        }
+        jsonWriter.setSerializeNulls(serializeNulls);
+        return jsonWriter;
+    }
+
 }

@@ -1,8 +1,11 @@
 package com.ym.materials.jdk;
 
+import org.junit.Test;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.List;
 import java.util.Map;
 
 public class TypePojo <E> {
@@ -11,6 +14,24 @@ public class TypePojo <E> {
     private Map<String, ? extends Integer> parameterized_type;
     private E type_variable;
     private E[] array_type;
+    private List<String> list1;
+    private List<Integer> list2;
+    private List<String> list3;
+
+    @Test
+    public void testTypeEqual() throws Exception {
+        Field field1 = TypePojo.class.getDeclaredField("list1");
+        Field field2 = TypePojo.class.getDeclaredField("list2");
+        Field field3 = TypePojo.class.getDeclaredField("list3");
+
+        Type genericType = field1.getGenericType();
+        Type genericType1 = field2.getGenericType();
+        Type genericType2 = field3.getGenericType();
+        System.out.println(genericType);
+        System.out.println(genericType1);
+        System.out.println(genericType2);
+        System.out.println(genericType.equals(genericType2));
+    }
 
     public static void main(String[] args) {
         Class pojoClass = TypePojo.class;

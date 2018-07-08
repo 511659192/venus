@@ -1,57 +1,34 @@
 package com.ym.materials.gson;
 
-import com.alibaba.fastjson.JSON;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
+import sun.misc.Unsafe;
 
-import java.lang.reflect.Array;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.List;
+import java.io.StringReader;
+import java.lang.reflect.Field;
+import java.util.ArrayList;
 
 public class GsonDemo {
-    public static class ClassRoom{
-        public String roomName;
-        public long number;
-        public String toString() {
-            return "["+roomName+":"+number+"]";
+    private final static Unsafe UNSAFE;
+    private final static long bufferOffset;
+
+    static {
+        try {
+            Field field = Unsafe.class.getDeclaredField("theUnsafe");
+            field.setAccessible(true);
+            UNSAFE = (Unsafe) field.get(null);
+            bufferOffset = UNSAFE.objectFieldOffset(JsonReader.class.getDeclaredField("buffer")); // 原始数组元素地址偏移量
+        } catch (Exception e) {
+            throw new Error(e);
         }
     }
-
-    public static class User<T>{
-        private T room;
-        public String name;
-        public int age;
-
-        public User() {
-            System.out.println(this);
-            System.out.println(this.getClass());
-            System.out.println(this.getClass().getGenericSuperclass());
-        }
-
-//        @Override
-//        public String toString() {
-//            return name+"->"+age+":"+room;
-//        }
-    }
-
-
 
     public static void main(String[] args) {
-
-        new User<ClassRoom>(){};
-        new User<ClassRoom>();
-
         Gson gson = new Gson();
-//        String strJson = "{name:'david',age:19,room:{roomName:'small',number:1}}";
-//        User<ClassRoom> u = gson.fromJson(strJson, new TypeToken<User<ClassRoom>>(){}.getType()); // david->19:[small:1]
-////        User<ClassRoom> u = gson.fromJson(strJson, User.class); // david->19:{roomName=small, number=1.0}
-//        System.out.println(gson.toJson(u));
-        String s = gson.toJson(new String[]{"str ing1", "stri$2"});
-        String[] array = gson.fromJson("  " + s, String[].class);
-        System.out.println(array);
+        String strJson = "test1111test2222test3333";
+        JsonReader jsonReader = gson.newJsonReader(new StringReader(strJson));
+        UNSAFE.putObject(jsonReader, bufferOffset, new char[8]);
+        String s = gson.fromJson(jsonReader, String.class);
+        System.out.println(s);
     }
-
-
-
 }

@@ -54,4 +54,14 @@ public class TypeToken<T> {
     public static TypeToken get(Type type) {
         return new TypeToken<Object>(type);
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof TypeToken<?> && Types.equals(type, ((TypeToken) obj).type);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.hashCode;
+    }
 }
