@@ -29,12 +29,12 @@ public class ReflectiveTypeAdapterFactory implements TypeAdapterFactory {
     }
 
     @Override
-    public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> typeToken) {
-        Class<? super T> rawType = typeToken.getRawType();
-        if (!(rawType instanceof Object)) {
-            return null;
-        }
+    public <T> boolean accept(TypeToken<T> typeToken) {
+        return typeToken.getRawType() instanceof Object;
+    }
 
+    @Override
+    public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> typeToken) {
         ObjectConstructor objectConstructor = constructor.get(typeToken);
         Map<String, BoundField> boundFields = getBoundFields(gson, typeToken, typeToken.getRawType());
         return new Adapter<>(objectConstructor, boundFields);

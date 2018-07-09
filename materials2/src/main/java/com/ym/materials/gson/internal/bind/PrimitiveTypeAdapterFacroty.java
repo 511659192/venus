@@ -13,8 +13,13 @@ public class PrimitiveTypeAdapterFacroty {
     static <T> TypeAdapterFactory newFactory(final Class type, final TypeAdapter<T> typeAdapter) {
         return new TypeAdapterFactory() {
             @Override
+            public <T> boolean accept(TypeToken<T> typeToken) {
+                return typeToken.getRawType() == type;
+            }
+
+            @Override
             public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> typeToken) {
-                return typeToken.getRawType() == type ? (TypeAdapter<T>) typeAdapter : null;
+                return (TypeAdapter<T>) typeAdapter;
             }
         };
     }

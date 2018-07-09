@@ -36,4 +36,13 @@ public class TypeToken<T> {
     public int getHashCode() {
         return hashCode;
     }
+
+    @Override
+    public String toString() {
+        return "TypeToken{" +
+                "type=" + type +
+                ", rawType=" + rawType +
+                ", hashCode=" + hashCode +
+                '}';
+    }
 }

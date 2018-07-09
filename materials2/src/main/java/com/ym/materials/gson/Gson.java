@@ -6,7 +6,6 @@ import com.ym.materials.gson.adapter.TypeAdapterFactory;
 import com.ym.materials.gson.internal.ObjectConstructor;
 import com.ym.materials.gson.internal.bind.ReflectiveTypeAdapterFactory;
 import com.ym.materials.gson.internal.bind.StringTypeAdapterFactory;
-import com.ym.materials.gson.internal.bind.TypeAdapterRuntimeTypeWrapper;
 import com.ym.materials.gson.stream.JsonReader;
 import com.ym.materials.gson.stream.JsonWriter;
 import com.ym.materials.gson.type.TypeToken;
@@ -94,15 +93,16 @@ public class Gson {
             threadCalls.put(typeToken, futureTypeAdapter);
 
             for (TypeAdapterFactory factory : factories) {
-                typeAdapter = factory.create(this, typeToken);
-                if (typeAdapter != null) {
+                if (factory.accept(typeToken)) {
+                    typeAdapter = factory.create(this, typeToken);
+                    checkNotNull(typeAdapter);
                     futureTypeAdapter.setDelegate(typeAdapter);
                     typeTokenCache.put(typeToken, typeAdapter);
                     return typeAdapter;
                 }
             }
 
-            throw new IllegalArgumentException("typeAdatper not found" + typeToken);
+            throw new IllegalArgumentException("typeAdapter not found" + typeToken);
         } finally {
             threadCalls.remove(typeToken);
             if (needClean) {

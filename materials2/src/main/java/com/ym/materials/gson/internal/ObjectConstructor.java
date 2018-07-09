@@ -51,7 +51,7 @@ public abstract class ObjectConstructor {
                 };
             }
 
-            throw new RuntimeException("not support now");
+            throw new RuntimeException("not accept now");
         }
 
         if (Map.class.isAssignableFrom(rawType)) {

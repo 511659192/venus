@@ -85,7 +85,7 @@ public class JsonWriter extends JsonScope implements Closeable, Flushable {
 
     private void open(int scope, char bracket) throws IOException {
         beforeValue();
-        top(scope);
+        push(scope);
         writer.append(bracket);
     }
 
@@ -99,7 +99,7 @@ public class JsonWriter extends JsonScope implements Closeable, Flushable {
                 top(NONEMPTY_OBJECT);
                 break;
             default:
-                throw new RuntimeException("not support");
+                throw new RuntimeException("not accept");
         }
     }
 

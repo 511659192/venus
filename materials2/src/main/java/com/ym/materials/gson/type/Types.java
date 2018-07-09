@@ -70,7 +70,7 @@ public class Types {
     }
 
     public static Type resolve(Type context, Class<?> rawType, Type toResolve, Set<TypeVariable> visitedTypeVariable) {
-        for (; ; ) {
+        for (;;) {
             if (toResolve instanceof TypeVariable) {
                 TypeVariable origin = (TypeVariable) toResolve;
                 if (visitedTypeVariable.contains(origin)) {

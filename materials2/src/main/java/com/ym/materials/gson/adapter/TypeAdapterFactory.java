@@ -8,5 +8,7 @@ import com.ym.materials.gson.type.TypeToken;
  */
 public interface TypeAdapterFactory {
 
+    <T> boolean accept(TypeToken<T> typeToken);
+
     <T> TypeAdapter<T> create(Gson gson, TypeToken<T> typeToken);
 }
