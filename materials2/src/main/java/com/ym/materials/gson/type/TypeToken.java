@@ -22,7 +22,7 @@ public class TypeToken<T> {
     }
 
     public static TypeToken<?> get(Type type) {
-        return new TypeToken<Object>(type);
+        return new TypeToken<>(type);
     }
 
     public Type getType() {

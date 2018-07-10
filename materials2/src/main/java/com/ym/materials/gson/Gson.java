@@ -9,8 +9,10 @@ import com.ym.materials.gson.internal.bind.StringTypeAdapterFactory;
 import com.ym.materials.gson.stream.JsonReader;
 import com.ym.materials.gson.stream.JsonWriter;
 import com.ym.materials.gson.type.TypeToken;
+import org.apache.log4j.pattern.BridgePatternParser;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -64,12 +66,50 @@ public class Gson {
         return jsonWritter;
     }
 
+    public <T> T fromJson(String json, Class<T> classOfJson) {
+        return fromJson(json, ((Type) classOfJson));
+    }
+
+    public <T> T fromJson(String json, Type typeOfJson) {
+        StringReader stringReader = new StringReader(json);
+        return fromJson(typeOfJson, stringReader);
+
+    }
+
+    private <T> T fromJson(Type typeOfJson, StringReader stringReader) {
+        JsonReader jsonReader = newJsonReader(stringReader);
+        T result = fromJson(typeOfJson, jsonReader);
+        return result;
+    }
+
+    private <T> T fromJson(Type typeOfJson, JsonReader reader) {
+        boolean oldLenient = reader.isLenient();
+        reader.setLenient(true);
+        try {
+            reader.peek();
+            TypeToken<T> typeToken = (TypeToken<T>) TypeToken.get(typeOfJson);
+            TypeAdapter<T> adapter = getAdapter(typeToken);
+            T result = adapter.read(reader);
+            return result;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            reader.setLenient(oldLenient);
+        }
+    }
+
+    private JsonReader newJsonReader(StringReader stringReader) {
+        JsonReader jsonReader = new JsonReader(stringReader);
+        return jsonReader;
+    }
+
+
     private void toJson(Object src, Type typeOfSrc, JsonWriter writer) throws IOException {
         TypeAdapter<?> typeAdapter = getAdapter(TypeToken.get(typeOfSrc));
         ((TypeAdapter<Object>) typeAdapter).write(writer, src);
     }
 
-    public TypeAdapter<?> getAdapter(TypeToken<?> typeToken) {
+    public <T> TypeAdapter<T> getAdapter(TypeToken<T> typeToken) {
         TypeAdapter typeAdapter = typeTokenCache.get(typeToken);
         if (typeAdapter != null) {
             return typeAdapter;
@@ -138,13 +178,28 @@ public class Gson {
     public static void main(String[] args) {
         Person person = new Person();
         person.setName("person");
+        Info info = new Info();
+        info.setAddress("address");
+        person.setInfo(info);
         Gson gson = new Gson();
         String s = gson.toJson(person);
         System.out.println(s);
+
+        String json = "{\"name\":\"person\",\"info\":{\"address\":\"address\"}}";
+
     }
 
     static class Person {
         String name;
+        Info info;
+
+        public Info getInfo() {
+            return info;
+        }
+
+        public void setInfo(Info info) {
+            this.info = info;
+        }
 
         public String getName() {
             return name;
@@ -152,6 +207,18 @@ public class Gson {
 
         public void setName(String name) {
             this.name = name;
+        }
+    }
+
+    static class Info {
+        String address;
+
+        public String getAddress() {
+            return address;
+        }
+
+        public void setAddress(String address) {
+            this.address = address;
         }
     }
 }
