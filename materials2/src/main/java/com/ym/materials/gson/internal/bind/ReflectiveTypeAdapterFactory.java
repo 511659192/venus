@@ -67,6 +67,18 @@ public class ReflectiveTypeAdapterFactory implements TypeAdapterFactory {
 
         @Override
         public T read(JsonReader in) throws IOException {
+            T instance = constructor.construct();
+            try {
+                in.beginObject();
+                while (in.hashNext()) {
+                    in.nextName();
+                }
+
+            } catch (Exception e) {
+
+            }
+
+
             return null;
         }
     }

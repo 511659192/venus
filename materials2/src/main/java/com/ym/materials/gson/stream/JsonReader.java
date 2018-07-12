@@ -1,15 +1,10 @@
 package com.ym.materials.gson.stream;
 
 import com.ym.materials.gson.internal.Preconditions;
-import jdk.nashorn.internal.ir.IfNode;
-import jdk.nashorn.internal.runtime.regexp.joni.exception.SyntaxException;
 
-import javax.swing.*;
 import java.io.*;
-import java.lang.annotation.Target;
-import java.math.BigDecimal;
-import java.text.DecimalFormat;
-import java.util.concurrent.Future;
+
+import static com.ym.materials.gson.stream.JsonToken.*;
 
 /**
  * Created by ym on 2018/7/8.
@@ -30,6 +25,10 @@ public class JsonReader extends JsonScope implements Closeable {
     private static final int PEEKED_NULL = 7;
     private static final int PEEKED_DOUBLE_QUOTED = 9;
     private static final int PEEKED_UNQUOTED = 10;
+
+    private static final int PEEKED_BUFFERED = 11;
+    private static final int PEEKED_DOUBLE_QUOTED_NAME = 13;
+    private static final int PEEKED_UNQUOTED_NAME = 14;
 
     private static final int PEEKED_LONG = 15;
     private static final int PEEKED_NUMBER = 16;
@@ -83,8 +82,32 @@ public class JsonReader extends JsonScope implements Closeable {
         this.lenient = lenient;
     }
 
-    public void peek() throws IOException {
+    public JsonToken peek() throws IOException {
         int p = doPeek();
+        switch (p) {
+            case PEEKED_BEGIN_OBJECT:
+                return BEGIN_OBJECT;
+            case PEEKED_END_OBJECT:
+                return END_OBJECT;
+            case PEEKED_DOUBLE_QUOTED:
+                return STRING;
+            case PEEKED_TRUE:
+            case PEEKED_FALSE:
+                return BOOLEAN;
+            case PEEKED_NULL:
+                return NULL;
+            case PEEKED_NUMBER:
+            case PEEKED_LONG:
+                return NUMBER;
+            case PEEKED_DOUBLE_QUOTED_NAME:
+            case PEEKED_UNQUOTED_NAME:
+            case PEEKED_BUFFERED:
+                return NAME;
+            case PEEKED_EOF:
+                return END_DOCUMENT;
+            default:
+                throw new RuntimeException("not support");
+        }
     }
 
     private int doPeek() throws IOException {
@@ -97,6 +120,7 @@ public class JsonReader extends JsonScope implements Closeable {
         if (scope == EMPTY_DOCUMENT) {
             if (lenient) {
                 nextNonWhitespace(true);
+                pos--;
             }
             top(NONEMPTY_DOCUMENT);
         } else if (scope == EMPTY_OBJECT) {
@@ -132,34 +156,61 @@ public class JsonReader extends JsonScope implements Closeable {
         return peeked = PEEKED_UNQUOTED;
     }
 
+    public static void main(String[] args) {
+        long value = MIN_INCOMPLETE_INTEGER - 1;
+        while (true) {
+            long newValue = value * 10;
+            boolean b2 = value < MIN_INCOMPLETE_INTEGER && newValue >= value;
+            if (b2) {
+                System.out.println(value - MIN_INCOMPLETE_INTEGER);
+                System.out.println("value   :" + value);
+                System.out.println("newValue:" + newValue);
+            }
+            value = newValue;
+        }
+    }
+
+
+    /**
+     * 正整数: NUMBER_CHAR_NONE -> NUMBER_CHAR_DIGIT
+     * 负整数：NUMBER_CHAR_NONE -> NUMBER_CHAR_SIGN -> NUMBER_CHAR_DIGIT
+     * 正小数：NUMBER_CHAR_NONE -> NUMBER_CHAR_DIGIT -> NUMBER_CHAR_DECIMAL -> NUMBER_CHAR_FRACTION_DIGIT
+     * 负小数：NUMBER_CHAR_NONE -> NUMBER_CHAR_SIGN-> NUMBER_CHAR_DIGIT -> NUMBER_CHAR_DECIMAL -> NUMBER_CHAR_FRACTION_DIGIT
+     * 科学计数+：NUMBER_CHAR_NONE -> NUMBER_CHAR_DIGIT -> NUMBER_CHAR_DECIMAL -> NUMBER_CHAR_FRACTION_DIGIT
+     * NUMBER_CHAR_EXP_E -> NUMBER_CHAR_EXP_SIGN -> NUMBER_CHAR_EXP_DIGIT
+     *
+     * @return
+     * @throws IOException
+     */
     private int peekNumber() throws IOException {
         int p = pos;
         int l = limit;
-        long value = 0;
-        boolean negative = false;
-        boolean fitsInLong = true;
-        int last = NUMBER_CHAR_NONE;
 
-        int i = 0;
+        boolean nevigate = false; // 是否负值
+        boolean fitsInLong = true; // 没看懂 数据极端场景
+        long value = 0;
+        int i = 0; // 下标
+        int last = NUMBER_CHAR_NONE;
         outer:
         for (; true; i++) {
             if (p + i == l) {
                 if (i == buffer.length) {
                     return PEEKED_NONE;
                 }
+
                 if (!fillBuffer(i + 1)) {
                     break;
                 }
-                l = limit;
                 p = pos;
+                l = limit;
             }
 
-            char c = buffer[pos + i];
+            char c = buffer[pos];
             switch (c) {
-                case '-':
+                case '-': // 负值 或者 科学计数
                     if (last == NUMBER_CHAR_NONE) {
+                        nevigate = true;
                         last = NUMBER_CHAR_SIGN;
-                        negative = true;
                         continue;
                     } else if (last == NUMBER_CHAR_EXP_E) {
                         last = NUMBER_CHAR_EXP_SIGN;
@@ -173,51 +224,50 @@ public class JsonReader extends JsonScope implements Closeable {
                     }
                     return PEEKED_NONE;
                 case 'e':
-                case 'E':
+                case 'E': // e 存在两个状态 NUMBER_CHAR_EXP_E NUMBER_CHAR_EXP_SIGN
                     if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT) {
                         last = NUMBER_CHAR_EXP_E;
                         continue;
                     }
                     return PEEKED_NONE;
-                case '.':
+                case '.': // 小数处理
                     if (last == NUMBER_CHAR_DIGIT) {
                         last = NUMBER_CHAR_DECIMAL;
                         continue;
                     }
                     return PEEKED_NONE;
                 default:
-                    if (c < '0' || c > '9') {
-                        if (!isLiteral(c)) {
-                            break outer;
+                    if (c < '0' || c > '9') { // 字符型 代表数值结束
+                        if (isLiteral(c)) {
+                            return c;
                         }
-                        return PEEKED_NONE;
                     }
-
-                    if (last == NUMBER_CHAR_NONE || last == NUMBER_CHAR_SIGN) {
+                    if (last == NUMBER_CHAR_NONE || last == NUMBER_CHAR_SIGN) { // 空 或者 负值
                         value = -(c - '0');
                         last = NUMBER_CHAR_DIGIT;
                     } else if (last == NUMBER_CHAR_DIGIT) {
                         if (value == 0) {
                             return PEEKED_NONE;
                         }
-
-                        long newValue = value * 10 - (c - '0');
+                        long newValue = value * 10 - (c - '0'); // char 2 long
                         fitsInLong &= value > MIN_INCOMPLETE_INTEGER || (value == MIN_INCOMPLETE_INTEGER && value > newValue);
                         value = newValue;
-                    } else if (last == NUMBER_CHAR_DECIMAL) {
+                    } else if (last == NUMBER_CHAR_DIGIT) {
                         last = NUMBER_CHAR_FRACTION_DIGIT;
                     } else if (last == NUMBER_CHAR_EXP_E || last == NUMBER_CHAR_EXP_SIGN) {
                         last = NUMBER_CHAR_EXP_DIGIT;
                     }
             }
+
         }
 
-        if (last == NUMBER_CHAR_DIGIT && fitsInLong && (value != Long.MIN_VALUE || negative) && (value != 0 || !negative)) {
-            peekedLong = negative ? value : -value;
+        // 数值类型
+        if (last == NUMBER_CHAR_DIGIT && fitsInLong && (value != Long.MIN_VALUE || nevigate) && (value != 0 || !nevigate)) { // 注意这种写法
+            peekedLong = nevigate ? value : -value;
             pos += i;
             return peeked = PEEKED_LONG;
-        } else if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_FRACTION_DIGIT || last == NUMBER_CHAR_EXP_DIGIT) {
-            peekedNumberLength = i;
+        } else if (last == NUMBER_CHAR_DIGIT || last == NUMBER_CHAR_DECIMAL || last == NUMBER_CHAR_FRACTION_DIGIT) {
+            peekedNumberLength = i; // 数值类型长度
             return peeked = PEEKED_NUMBER;
         } else {
             return PEEKED_NONE;
@@ -391,7 +441,16 @@ public class JsonReader extends JsonScope implements Closeable {
     }
 
     private void push(int scope) {
+        expandIfNeccesafy();
         stack[stackSize++] = scope;
+    }
+
+    private void expandIfNeccesafy() {
+        if (stackSize == stack.length) {
+            int[] newStack = new int[stackSize << 1];
+            System.arraycopy(stack, 0, newStack, 0, stackSize);
+            stack = newStack;
+        }
     }
 
     private void top(int newTop) {
@@ -424,6 +483,132 @@ public class JsonReader extends JsonScope implements Closeable {
                 return false;
             default:
                 return true;
+        }
+    }
+
+    public void beginObject() throws IOException {
+        int p = doPeek();
+        if (p == PEEKED_BEGIN_OBJECT) {
+            push(EMPTY_OBJECT);
+            peeked = NONEMPTY_OBJECT;
+        } else {
+            throw new RuntimeException("expect begin object but was " + peek());
+        }
+    }
+
+    public boolean hashNext() throws IOException {
+        int peek = doPeek();
+        return peek != PEEKED_END_OBJECT;
+    }
+
+    public String nextName() throws IOException {
+        int peek = doPeek();
+        String result;
+        switch (peek) {
+            case PEEKED_DOUBLE_QUOTED_NAME:
+                result = nextQuotedValue('\"');
+                break;
+            case PEEKED_UNQUOTED_NAME:
+                result = nextUnquotedValue();
+                break;
+            default:
+                throw new RuntimeException("not support");
+        }
+        peeked = PEEKED_NONE;
+        return result;
+    }
+
+    private String nextUnquotedValue() {
+        return null;
+    }
+
+    private String nextQuotedValue(char quote) throws IOException {
+        StringBuilder builder = null;
+        while (true) {
+            int start = pos;
+            while (pos < limit) {
+                char c = buffer[pos++];
+                if (c == quote) {
+                    int length = pos - start - 1;
+                    if (length == 0) {
+                        return "";
+                    }
+                    if (builder == null) {
+                        return new String(buffer, start, length);
+                    }
+                    builder.append(buffer, start, length);
+                    return builder.toString();
+                } else if (c == '\\') {
+                    int length = pos - start - 1;
+                    if (builder == null) {
+                        int estimatedLength = (length + 1) << 1;
+                        builder = new StringBuilder(Math.max(estimatedLength, 16));
+                    }
+                    builder.append(buffer, start, length);
+                    builder.append(readEscapeCharacter());
+                    start = pos;
+                } else if (c == '\n') {
+                    lineNumber++;
+                    lineStart = pos;
+                }
+            }
+            if (builder == null) {
+                int estimatedLength = (pos - start) << 1;
+                builder = new StringBuilder(Math.max(estimatedLength, 16));
+            }
+
+            builder.append(buffer, start, pos - start);
+            if (!fillBuffer(1)) {
+                throw new RuntimeException("unterminated string");
+            }
+        }
+    }
+
+    private char readEscapeCharacter() throws IOException {
+        if (pos == limit && !fillBuffer(1)) {
+            throw new RuntimeException();
+        }
+
+        char escaped = buffer[pos++];
+        switch (escaped) {
+            case 'u':
+                if (pos + 4 > limit && !fillBuffer(4)) {
+                    throw new RuntimeException();
+                }
+
+                char result = 0;
+                for (int i = pos, end = i + 4; i < end; i++) {
+                    char c = buffer[i];
+                    result <<= 4;
+                    if (c >= '0' && c <= '9') {
+                        result += (c - '0');
+                    } else if (c >= 'a' && c <= 'f') {
+                        result += (c - 'a' + 10);
+                    } else if (c >= 'A' && c <= 'F') {
+                        result += (c - 'A' + 10);
+                    } else {
+                        throw new RuntimeException("uuid 必须是16进制");
+                    }
+                }
+                pos += 4;
+                return result;
+            case 't': return '\t';
+            case 'b': return '\b';
+            case 'n': return '\n';
+            case 'r': return '\r';
+            case 'f': return '\f';
+            case '\n':
+                lineNumber++;
+                lineStart = pos;
+            case '\'':
+            case '"':
+            case '\\':
+            case '/':
+                return escaped;
+            default:
+                // throw error when none of the above cases are matched
+                throw new RuntimeException("Invalid escape sequence");
+
         }
     }
 }
