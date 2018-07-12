@@ -79,8 +79,8 @@ public class JsonWriter extends JsonScope implements Closeable, Flushable {
     }
 
     public void beginObject() throws IOException {
-        writeFieldName();
-        open(EMPTY_OBJECT, '{');
+        writeFieldName(); // 内部对象需要先写入fieldName
+        open(EMPTY_OBJECT, '{'); // 开始当前对象
     }
 
     private void open(int scope, char bracket) throws IOException {
@@ -94,7 +94,7 @@ public class JsonWriter extends JsonScope implements Closeable, Flushable {
             case EMPTY_DOCUMENT:
                 top(NONEMPTY_DOCUMENT);
                 break;
-            case DANGLING_NAME:
+            case DANGLING_NAME: // 如果是名称处理 先写入分隔符
                 writer.append(separator);
                 top(NONEMPTY_OBJECT);
                 break;
@@ -114,7 +114,7 @@ public class JsonWriter extends JsonScope implements Closeable, Flushable {
     private void beforeName() throws IOException {
         int scope = peek();
         if (scope == NONEMPTY_OBJECT) {
-            writer.append(",");
+            writer.append(","); // 支持多个名称写入
         } else if (scope != EMPTY_OBJECT) {
             throw new IllegalStateException();
         }
@@ -146,14 +146,14 @@ public class JsonWriter extends JsonScope implements Closeable, Flushable {
                 continue;
             }
 
-            if (last < i) {
+            if (last < i) { // 写入替换下标前的值
                 writer.write(text, last, i - last);
             }
-            writer.write(replacement);
+            writer.write(replacement); // 写入替换后的值
             last = i + 1;
         }
 
-        if (last < length) {
+        if (last < length) { // 剩余的值写入
             writer.write(text, last, length - last);
         }
         quote('\"');
@@ -183,13 +183,13 @@ public class JsonWriter extends JsonScope implements Closeable, Flushable {
 
     public void writeName(String fieldName) {
         Preconditions.checkNotNull(fieldName);
-        if (this.fieldName != null) {
+        if (this.fieldName != null) { // 一次仅仅能写入一个字段名称
             throw new IllegalStateException();
         }
         if (stackSize == 0) {
             throw new IllegalStateException("jsonwriter is closed");
         }
-        this.fieldName = fieldName;
+        this.fieldName = fieldName; // 暂存 writeValue时 真正写入
     }
 
     public void writeValue(String value) throws IOException {

@@ -3,6 +3,8 @@ package com.ym.materials.gson.stream;
 import com.ym.materials.gson.internal.Preconditions;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.concurrent.Future;
 
 import static com.ym.materials.gson.stream.JsonToken.*;
 
@@ -44,8 +46,8 @@ public class JsonReader extends JsonScope implements Closeable {
     private static final int NUMBER_CHAR_EXP_DIGIT = 7;
 
     private final Reader in;
-    private final char[] buffer = new char[1024];
-    private int pos = 0;
+    private char[] buffer = new char[1024];
+    private int pos = 0; // 已经使用过的数据 fillBuffer的时候可以清除
     private int limit = 0;
     private int lineNumber = 0;
     private int lineStart = 0;
@@ -156,7 +158,7 @@ public class JsonReader extends JsonScope implements Closeable {
         return peeked = PEEKED_UNQUOTED;
     }
 
-    public static void main(String[] args) {
+    public static void main1(String[] args) {
         long value = MIN_INCOMPLETE_INTEGER - 1;
         while (true) {
             long newValue = value * 10;
@@ -413,13 +415,13 @@ public class JsonReader extends JsonScope implements Closeable {
         lineStart -= pos;
         if (pos != limit) {
             limit -= pos;
-            System.arraycopy(buffer, 0, buffer, 0, limit);
+            System.arraycopy(buffer, pos, buffer, 0, limit);
         } else {
             limit = 0;
         }
 
         pos = 0;
-        for (int total; (total = in.read(buffer, limit, buffer.length - limit)) != 0; ) {
+        for (int total; (total = in.read(buffer, limit, buffer.length - limit)) != -1; ) {
             limit += total;
             if (lineNumber == 0 && lineStart == 0 && limit > 0 && buffer[0] == '\ufeff') {
                 lineStart++;
@@ -518,8 +520,51 @@ public class JsonReader extends JsonScope implements Closeable {
         return result;
     }
 
-    private String nextUnquotedValue() {
-        return null;
+    public static void main(String[] args) throws IOException {
+        String text = "01234567";
+        JsonReader jsonReader = new JsonReader(new StringReader(text));
+        jsonReader.buffer = new char[8];
+        jsonReader.fillBuffer(1);
+        jsonReader.pos = 5;
+        String s = jsonReader.nextUnquotedValue();
+        System.out.println(s);
+    }
+
+    private String nextUnquotedValue() throws IOException {
+        StringBuilder builder = null;
+        int len = 0;
+        outer:
+        while (true) {
+            for (; pos + len < limit; len++) {
+                char c = buffer[pos + len];
+                if (!isLiteral(c)) { // 见到字符 当前字符串已经结束
+                    break outer;
+                }
+            }
+
+            if (len < buffer.length) {
+                if (fillBuffer(len + 1)) { // 为什么填充i+1呢
+                    continue;
+                } else {
+                    break;
+                }
+            }
+
+            builder = newStringBuilder(builder, len);
+            builder.append(buffer, pos, len);
+            pos += len;
+            len = 0;
+            if (!fillBuffer(1)) {
+                return builder.toString();
+            }
+        }
+        String result = (builder == null) ? new String(buffer, pos, len) : builder.append(buffer, pos, len).toString();
+        pos += len;
+        return result;
+    }
+
+    private StringBuilder newStringBuilder(StringBuilder builder, int capacity) {
+        return builder != null ? builder : new StringBuilder(Math.max(16, capacity));
     }
 
     private String nextQuotedValue(char quote) throws IOException {
@@ -530,21 +575,20 @@ public class JsonReader extends JsonScope implements Closeable {
                 char c = buffer[pos++];
                 if (c == quote) {
                     int length = pos - start - 1;
-                    if (length == 0) {
-                        return "";
-                    }
                     if (builder == null) {
-                        return new String(buffer, start, length);
+                        return new String(buffer, start, length); // 当前buffer 直接返回
+                    } else {
+                        builder.append(buffer, start, length); // 多次循环buffer
+                        return builder.toString();
                     }
-                    builder.append(buffer, start, length);
-                    return builder.toString();
-                } else if (c == '\\') {
-                    int length = pos - start - 1;
+                }
+
+                if (c == '\\') {
+                    int length = pos - start - 1; // 排除\\
                     if (builder == null) {
-                        int estimatedLength = (length + 1) << 1;
-                        builder = new StringBuilder(Math.max(estimatedLength, 16));
+                        builder = new StringBuilder(Math.max((length + 1) << 1, 16));
                     }
-                    builder.append(buffer, start, length);
+                    builder.append(builder, start, length);
                     builder.append(readEscapeCharacter());
                     start = pos;
                 } else if (c == '\n') {
@@ -552,12 +596,14 @@ public class JsonReader extends JsonScope implements Closeable {
                     lineStart = pos;
                 }
             }
+
+            // 超过limit
+            int length = pos - start;
             if (builder == null) {
-                int estimatedLength = (pos - start) << 1;
-                builder = new StringBuilder(Math.max(estimatedLength, 16));
+                builder = new StringBuilder(Math.max(length << 1, 16));
             }
 
-            builder.append(buffer, start, pos - start);
+            builder.append(buffer, start, length);
             if (!fillBuffer(1)) {
                 throw new RuntimeException("unterminated string");
             }
