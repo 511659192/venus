@@ -3,15 +3,14 @@ package com.ym.materials.gson.stream;
 import com.ym.materials.gson.internal.Preconditions;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.concurrent.Future;
 
 import static com.ym.materials.gson.stream.JsonToken.*;
+import static com.ym.materials.gson.stream.JsonScope.*;
 
 /**
  * Created by ym on 2018/7/8.
  */
-public class JsonReader extends JsonScope implements Closeable {
+public class JsonReader implements Closeable {
 
     private static final long MIN_INCOMPLETE_INTEGER = Long.MIN_VALUE / 10;
 
@@ -84,6 +83,12 @@ public class JsonReader extends JsonScope implements Closeable {
         this.lenient = lenient;
     }
 
+    /**
+     * 字符转换成定制化jsonToken
+     *
+     * @return
+     * @throws IOException
+     */
     public JsonToken peek() throws IOException {
         int p = doPeek();
         switch (p) {
@@ -104,7 +109,7 @@ public class JsonReader extends JsonScope implements Closeable {
             case PEEKED_DOUBLE_QUOTED_NAME:
             case PEEKED_UNQUOTED_NAME:
             case PEEKED_BUFFERED:
-                return NAME;
+                return STRING;
             case PEEKED_EOF:
                 return END_DOCUMENT;
             default:
@@ -122,11 +127,77 @@ public class JsonReader extends JsonScope implements Closeable {
         if (scope == EMPTY_DOCUMENT) {
             if (lenient) {
                 nextNonWhitespace(true);
-                pos--;
+                pos--; // 归0
             }
             top(NONEMPTY_DOCUMENT);
+        } else if (scope == NONEMPTY_DOCUMENT) {
+            int c = nextNonWhitespace(false);
+            if (c == -1) {
+                return PEEKED_EOF;
+            } else {
+                checkLenient();
+                pos--;
+            }
         } else if (scope == EMPTY_OBJECT) {
-        } else {
+            top(DANGLING_NAME);
+            int c = nextNonWhitespace(true);
+            switch (c) {
+                case '"':
+                    return peeked = PEEKED_DOUBLE_QUOTED_NAME;
+                case '}':
+                    return peeked = PEEKED_END_OBJECT;
+                default:
+                    checkLenient();
+                    pos--;
+                    if (isLiteral((char) c)) {
+                        return peeked = PEEKED_UNQUOTED_NAME;
+                    } else {
+                        throw new RuntimeException();
+                    }
+            }
+        } else if (scope == NONEMPTY_OBJECT) {
+            top(DANGLING_NAME);
+            int c = nextNonWhitespace(true);
+            switch (c) {
+                case '}':
+                    return peeked = PEEKED_END_OBJECT;
+                case ';':
+                    checkLenient();
+                case ',':
+                    break;
+                default:
+                    throw new RuntimeException();
+            }
+            int next = nextNonWhitespace(true);
+            switch (next) {
+                case '"':
+                    return peeked = PEEKED_DOUBLE_QUOTED_NAME;
+                case '}':
+                    throw new RuntimeException();
+                default:
+                    checkLenient();
+                    pos--;
+                    if (isLiteral((char) c)) {
+                        return peeked = PEEKED_UNQUOTED_NAME;
+                    } else {
+                        throw new RuntimeException();
+                    }
+            }
+        } else if (scope == DANGLING_NAME) {
+            top(NONEMPTY_OBJECT);
+            int c = nextNonWhitespace(true);
+            switch (c) {
+                case ':':
+                    break;
+                case '=':
+                    checkLenient();
+                    if ((pos < limit || fillBuffer(1)) && buffer[pos] == '>') {
+                        pos++;
+                    }
+                    break;
+                default:
+                    throw new RuntimeException();
+            }
         }
 
         int c = nextNonWhitespace(true);
@@ -393,7 +464,7 @@ public class JsonReader extends JsonScope implements Closeable {
     private boolean skipTo(String toFind) throws IOException {
         int length = toFind.length();
         outer:
-        for (; pos <= limit || fillBuffer(length); pos++) {
+        for (; pos < limit || fillBuffer(length); pos++) {
             char c = buffer[pos];
             if (c == '\n') {
                 lineNumber++;
@@ -492,7 +563,7 @@ public class JsonReader extends JsonScope implements Closeable {
         int p = doPeek();
         if (p == PEEKED_BEGIN_OBJECT) {
             push(EMPTY_OBJECT);
-            peeked = NONEMPTY_OBJECT;
+            peeked = PEEKED_NONE;
         } else {
             throw new RuntimeException("expect begin object but was " + peek());
         }
@@ -638,11 +709,16 @@ public class JsonReader extends JsonScope implements Closeable {
                 }
                 pos += 4;
                 return result;
-            case 't': return '\t';
-            case 'b': return '\b';
-            case 'n': return '\n';
-            case 'r': return '\r';
-            case 'f': return '\f';
+            case 't':
+                return '\t';
+            case 'b':
+                return '\b';
+            case 'n':
+                return '\n';
+            case 'r':
+                return '\r';
+            case 'f':
+                return '\f';
             case '\n':
                 lineNumber++;
                 lineStart = pos;
@@ -655,6 +731,41 @@ public class JsonReader extends JsonScope implements Closeable {
                 // throw error when none of the above cases are matched
                 throw new RuntimeException("Invalid escape sequence");
 
+        }
+    }
+
+    public String nextString() throws IOException {
+        int p = doPeek();
+        String result;
+        switch (p) {
+            case PEEKED_UNQUOTED:
+                result = nextUnquotedValue();
+                break;
+            case PEEKED_DOUBLE_QUOTED:
+                result = nextQuotedValue('\"');
+                break;
+            case PEEKED_LONG:
+                result = Long.toString(peekedLong);
+                break;
+            case PEEKED_NUMBER:
+                result = new String(buffer, pos, peekedNumberLength);
+                pos += peekedNumberLength;
+                break;
+            default:
+                throw new RuntimeException();
+        }
+
+        peeked = PEEKED_NONE;
+        return result;
+    }
+
+    public void endObject() throws IOException {
+        int p = doPeek();
+        if (p == PEEKED_END_OBJECT) {
+            stackSize--;
+            peeked = PEEKED_NONE;
+        } else {
+            throw new RuntimeException();
         }
     }
 }

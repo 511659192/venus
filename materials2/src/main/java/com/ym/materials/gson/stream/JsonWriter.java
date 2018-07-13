@@ -2,12 +2,21 @@ package com.ym.materials.gson.stream;
 
 import com.ym.materials.gson.internal.Preconditions;
 
-import java.io.*;
+import java.io.Closeable;
+import java.io.Flushable;
+import java.io.IOException;
+import java.io.Writer;
+
+import static com.ym.materials.gson.stream.JsonScope.*;
 
 /**
- * Created by ym on 2018/7/8.
+ * 状态机
+ * beginObject: EMPTY_DOCUMENT
+ * push: NONEMPTY_DOCUMENT -> EMPTY_OBJECT
+ * beforeName: DANGLING_NAME
+ * beforeValue:  NONEMPTY_OBJECT
  */
-public class JsonWriter extends JsonScope implements Closeable, Flushable {
+public class JsonWriter implements Closeable, Flushable {
 
     private static final String[] REPLACEMENT_CHARS;
     private static final String[] HTML_SAFE_REPLACEMENT_CHARS;

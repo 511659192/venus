@@ -71,18 +71,17 @@ public class ReflectiveTypeAdapterFactory implements TypeAdapterFactory {
             try {
                 in.beginObject();
                 while (in.hashNext()) {
-                    in.nextName();
+                    String fieldName = in.nextName();
+                    BoundField field = boundFields.get(fieldName);
+                    field.read(in, instance);
                 }
-
             } catch (Exception e) {
 
             }
-
-
-            return null;
+            in.endObject();
+            return instance;
         }
     }
-
 
     private Map<String, BoundField> getBoundFields(Gson gson, TypeToken<?> typeToken, Class<?> rawType) {
         Map<String, BoundField> result = new HashMap<>();

@@ -176,17 +176,19 @@ public class Gson {
     }
 
     public static void main(String[] args) {
-        Person person = new Person();
-        person.setName("person");
-        Info info = new Info();
-        info.setAddress("address");
-        person.setInfo(info);
+//        Person person = new Person();
+//        person.setName("person");
+//        Info info = new Info();
+//        info.setAddress("address");
+//        person.setInfo(info);
+//        Gson gson = new Gson();
+//        String s = gson.toJson(person);
+//        System.out.println(s);
+
         Gson gson = new Gson();
-        String s = gson.toJson(person);
-        System.out.println(s);
-
-        String json = "{\"name\":\"person\",\"info\":{\"address\":\"address\"}}";
-
+        String json = "{\"name\":\"person\"}";
+        Person person1 = gson.fromJson(json, Person.class);
+        System.out.println(person1);
     }
 
     static class Person {
@@ -207,6 +209,14 @@ public class Gson {
 
         public void setName(String name) {
             this.name = name;
+        }
+
+        @Override
+        public String toString() {
+            return "Person{" +
+                    "name='" + name + '\'' +
+                    ", info=" + info +
+                    '}';
         }
     }
 

@@ -20,7 +20,7 @@ public class StringTypeAdapterFactory extends PrimitiveTypeAdapterFacroty {
 
         @Override
         public String read(JsonReader in) throws IOException {
-            return null;
+            return new StringBuffer(in.nextString()).toString();
         }
     });
 }
