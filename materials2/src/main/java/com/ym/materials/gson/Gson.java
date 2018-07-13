@@ -86,7 +86,7 @@ public class Gson {
         boolean oldLenient = reader.isLenient();
         reader.setLenient(true);
         try {
-            reader.peek();
+//            reader.peek();
             TypeToken<T> typeToken = (TypeToken<T>) TypeToken.get(typeOfJson);
             TypeAdapter<T> adapter = getAdapter(typeToken);
             T result = adapter.read(reader);
@@ -176,16 +176,16 @@ public class Gson {
     }
 
     public static void main(String[] args) {
-//        Person person = new Person();
-//        person.setName("person");
-//        Info info = new Info();
-//        info.setAddress("address");
+        Person person = new Person();
+        person.setName("person");
+        Info info = new Info();
+        info.setAddress("address");
 //        person.setInfo(info);
-//        Gson gson = new Gson();
-//        String s = gson.toJson(person);
-//        System.out.println(s);
-
         Gson gson = new Gson();
+        String s = gson.toJson(person);
+        System.out.println(s);
+
+//        Gson gson = new Gson();
         String json = "{\"name\":\"person\"}";
         Person person1 = gson.fromJson(json, Person.class);
         System.out.println(person1);
@@ -229,6 +229,13 @@ public class Gson {
 
         public void setAddress(String address) {
             this.address = address;
+        }
+
+        @Override
+        public String toString() {
+            return "Info{" +
+                    "address='" + address + '\'' +
+                    '}';
         }
     }
 }

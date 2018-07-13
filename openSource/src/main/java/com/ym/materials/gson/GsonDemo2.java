@@ -11,18 +11,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GsonDemo2 {
-    static class Person {
-        private String name;
-        private Person child;
-        private List<Integer> ids;
-        private BigDecimal num;
 
-        public BigDecimal getNum() {
-            return num;
+    public static void main(String[] args) {
+        Person person = new Person();
+        person.setName("person");
+        Info info = new Info();
+        info.setAddress("address");
+//        person.setInfo(info);
+        Gson gson = new Gson();
+        String s = gson.toJson(person);
+        System.out.println(s);
+    }
+
+    static class Person {
+        String name;
+        Info info;
+
+        public Info getInfo() {
+            return info;
         }
 
-        public void setNum(BigDecimal num) {
-            this.num = num;
+        public void setInfo(Info info) {
+            this.info = info;
         }
 
         public String getName() {
@@ -33,38 +43,31 @@ public class GsonDemo2 {
             this.name = name;
         }
 
-        public Person getChild() {
-            return child;
-        }
-
-        public void setChild(Person child) {
-            this.child = child;
-        }
-
-        public List<Integer> getIds() {
-            return ids;
-        }
-
-        public void setIds(List<Integer> ids) {
-            this.ids = ids;
+        @Override
+        public String toString() {
+            return "Person{" +
+                    "name='" + name + '\'' +
+                    ", info=" + info +
+                    '}';
         }
     }
 
-    public static void main(String[] args) {
-        Gson gson = new Gson();
-        Person person = new Person();
-        person.setName("01");
-        System.out.println(Long.toBinaryString(Long.MIN_VALUE));
-        System.out.println(Long.toBinaryString(Long.MIN_VALUE + 1));
-        person.setNum(new BigDecimal(-Long.MIN_VALUE));
-        System.out.println(Integer.toBinaryString(15));
-        System.out.println(Integer.toBinaryString(12));
-        List<Integer> list = new ArrayList<>();
-        list.add(1);
-        list.add(2);
-//        person.setIds(list);
-        String aa = gson.toJson(person);
-        System.out.println(aa);
-        gson.fromJson(aa, Person.class);
+    static class Info {
+        String address;
+
+        public String getAddress() {
+            return address;
+        }
+
+        public void setAddress(String address) {
+            this.address = address;
+        }
+
+        @Override
+        public String toString() {
+            return "Info{" +
+                    "address='" + address + '\'' +
+                    '}';
+        }
     }
 }

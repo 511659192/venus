@@ -8,7 +8,15 @@ import static com.ym.materials.gson.stream.JsonToken.*;
 import static com.ym.materials.gson.stream.JsonScope.*;
 
 /**
- * Created by ym on 2018/7/8.
+ * "{\"name\":\"person\"}"
+ init:EMPTY_DOCUMENT
+ peek:NONEMPTY_DOCUMENT|PEEKED_BEGIN_OBJECT
+ beginObject:EMPTY_OBJECT
+ hasNext:DANGLING_NAME|PEEKED_DOUBLE_QUOTED_NAME
+ read:NONEMPTY_OBJECT|PEEKED_DOUBLE_QUOTED
+ hasNext:DANGLING_NAME|PEEKED_END_OBJECT
+ endObject:PEEKED_END_OBJECT
+ *
  */
 public class JsonReader implements Closeable {
 
@@ -763,6 +771,15 @@ public class JsonReader implements Closeable {
         int p = doPeek();
         if (p == PEEKED_END_OBJECT) {
             stackSize--;
+            peeked = PEEKED_NONE;
+        } else {
+            throw new RuntimeException();
+        }
+    }
+
+    public void nextNull() throws IOException {
+        int p = doPeek();
+        if (p == PEEKED_NULL) {
             peeked = PEEKED_NONE;
         } else {
             throw new RuntimeException();

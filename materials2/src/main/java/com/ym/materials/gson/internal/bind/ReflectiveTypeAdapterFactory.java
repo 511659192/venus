@@ -6,6 +6,7 @@ import com.ym.materials.gson.adapter.TypeAdapterFactory;
 import com.ym.materials.gson.internal.ObjectConstructor;
 import com.ym.materials.gson.internal.ReflectionAccessor;
 import com.ym.materials.gson.stream.JsonReader;
+import com.ym.materials.gson.stream.JsonToken;
 import com.ym.materials.gson.stream.JsonWriter;
 import com.ym.materials.gson.type.TypeToken;
 import com.ym.materials.gson.type.Types;
@@ -52,6 +53,11 @@ public class ReflectiveTypeAdapterFactory implements TypeAdapterFactory {
 
         @Override
         public void write(JsonWriter out, T value) throws IOException {
+            if (value == null) {
+                out.nullValue();
+                return;
+            }
+
             out.beginObject();
             for (BoundField boundField : boundFields.values()) {
                 String name = boundField.name;
@@ -67,6 +73,12 @@ public class ReflectiveTypeAdapterFactory implements TypeAdapterFactory {
 
         @Override
         public T read(JsonReader in) throws IOException {
+            JsonToken peek = in.peek();
+            if (peek == JsonToken.NULL) {
+                in.nextNull();
+                return null;
+            }
+
             T instance = constructor.construct();
             try {
                 in.beginObject();

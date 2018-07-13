@@ -206,4 +206,23 @@ public class JsonWriter implements Closeable, Flushable {
         beforeValue();
         writeString(value);
     }
+
+    public void nullValue() throws IOException {
+        if (fieldName != null) {
+            if (serializeNulls) {
+                writeFieldName();
+            } else {
+                fieldName = null;
+                return;
+            }
+        }
+
+        beforeValue();
+        writeNull();
+    }
+
+    private void writeNull() throws IOException {
+        writer.write("null");
+    }
+
 }
