@@ -40,6 +40,18 @@ public abstract class RateLimiter {
         }
     }
 
+    public double acquire(int permits) {
+        long microsToWait = reserve(permits);
+        stopwatch.sleepMicrosUninterruptibly(microsToWait);
+        return 1.0 * microsToWait / TimeUnit.SECONDS.toMicros(1L);
+    }
+
+    private long reserve(int permits) {
+        synchronized (mutex()) {
+            return reserveAndGetWaitLength(permits, stopwatch.readMicros());
+        }
+    }
+
     public boolean tryAcquire(int permits, long timeout, TimeUnit unit) {
         long timeoutMicros = Math.max(unit.toMicros(timeout), 0);
         checkArgument(permits > 1);
