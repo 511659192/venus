@@ -12,6 +12,7 @@
         <module>springBoot2</module>
         <module>openSource</module>
         <module>materials2</module>
+        <module>springCloud</module>
     </modules>
     <packaging>pom</packaging>
 

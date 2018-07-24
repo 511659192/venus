@@ -10,6 +10,7 @@
         <module name="materials2" />
         <module name="openSource" />
         <module name="springBoot2" />
+        <module name="springCloud" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
@@ -17,6 +18,7 @@
       <module name="materials2" target="1.8" />
       <module name="openSource" target="1.8" />
       <module name="springBoot2" target="1.8" />
+      <module name="springCloud" target="1.8" />
       <module name="venus" target="1.8" />
     </bytecodeTargetLevel>
   </component>
