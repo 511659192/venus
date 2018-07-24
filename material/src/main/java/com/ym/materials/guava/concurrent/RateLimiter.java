@@ -2,8 +2,6 @@ package com.ym.materials.guava.concurrent;
 
 import com.google.common.base.Preconditions;
 import com.google.common.math.LongMath;
-import com.sun.org.apache.xerces.internal.impl.xpath.regex.Match;
-import org.apache.commons.math3.analysis.function.Max;
 
 import java.util.concurrent.TimeUnit;
 
@@ -15,8 +13,10 @@ import static java.util.concurrent.TimeUnit.NANOSECONDS;
 /**
  * Created by ym on 2018/7/22.
  */
+// TODO: 是否可以使用cas优化
 public abstract class RateLimiter {
 
+    // 读秒 以及 线程阻塞
     private final SleepingStopWatch stopwatch;
 
     public RateLimiter(SleepingStopWatch stopWatch) {
@@ -33,6 +33,10 @@ public abstract class RateLimiter {
         return rateLimiter;
     }
 
+    /**
+     * 设置速率
+     * @param permitsPerSecond
+     */
     public void setRate(double permitsPerSecond) {
         checkArgument(permitsPerSecond > 0 && !Double.isNaN(permitsPerSecond));
         synchronized (mutex()) {
@@ -42,45 +46,45 @@ public abstract class RateLimiter {
 
     public double acquire(int permits) {
         long microsToWait = reserve(permits);
-        stopwatch.sleepMicrosUninterruptibly(microsToWait);
+        stopwatch.sleepMicrosUninterruptibly(microsToWait); // 需要等待 线程阻塞
         return 1.0 * microsToWait / TimeUnit.SECONDS.toMicros(1L);
     }
 
     private long reserve(int permits) {
         synchronized (mutex()) {
-            return reserveAndGetWaitLength(permits, stopwatch.readMicros());
+            return reserveAndGetWaitTime(permits, stopwatch.readMicros());
         }
     }
 
     public boolean tryAcquire(int permits, long timeout, TimeUnit unit) {
         long timeoutMicros = Math.max(unit.toMicros(timeout), 0);
-        checkArgument(permits > 1);
+        checkArgument(permits > 0);
         long microsToWait;
         synchronized (mutex()) {
             long nowMicros = stopwatch.readMicros();
             if (!canAcquired(nowMicros, timeoutMicros)) {
                 return false;
             } else {
-                microsToWait = reserveAndGetWaitLength(permits, nowMicros);
+                microsToWait = reserveAndGetWaitTime(permits, nowMicros);
             }
         }
         stopwatch.sleepMicrosUninterruptibly(microsToWait);
         return true;
     }
 
-    final long reserveAndGetWaitLength(int permits, long nowMicros) {
-        long momentAvailable = reserveEarliestAvailable(permits, nowMicros);
+    final long reserveAndGetWaitTime(int permits, long nowMicros) {
+        long momentAvailable = reserveEarliestAvailableTime(permits, nowMicros);
         return Math.max(momentAvailable - nowMicros, 0);
     }
 
     private boolean canAcquired(long nowMicros, long timeout) {
-        return queryEarliestAvailable(nowMicros) <= nowMicros + timeout ;
+        return queryEarliestAvailableTime(nowMicros) <= nowMicros + timeout ;
     }
 
 
     abstract void doSetRate(double permitsPerSecond, long nowMicros);
-    abstract long queryEarliestAvailable(long nowMicros);
-    abstract long reserveEarliestAvailable(int permits, long nowMicros);
+    abstract long queryEarliestAvailableTime(long nowMicros);
+    abstract long reserveEarliestAvailableTime(int permits, long nowMicros);
 
     private volatile Object mutexDoNotUseDirectly;
 
@@ -97,7 +101,6 @@ public abstract class RateLimiter {
         return mutex;
     }
 
-
     abstract static class SmoothRateLimiter extends RateLimiter {
         double storedPermits;
         double maxPermits;
@@ -108,12 +111,12 @@ public abstract class RateLimiter {
         }
 
         @Override
-        long queryEarliestAvailable(long nowMicros) {
+        long queryEarliestAvailableTime(long nowMicros) {
             return nextFreeTicketMicros;
         }
 
         @Override
-        long reserveEarliestAvailable(int requiredPermits, long nowMicros) {
+        long reserveEarliestAvailableTime(int requiredPermits, long nowMicros) {
             resync(nowMicros);
             long retValue = nextFreeTicketMicros;
             double storedPermitsToSpend = Math.min(requiredPermits, this.storedPermits);
@@ -140,8 +143,8 @@ public abstract class RateLimiter {
             }
         }
 
-        protected abstract double coolDownIntervalMicros();
-        abstract void doSetRate(double permitsPerSecond, double stableIntervalMicros);
+        abstract double coolDownIntervalMicros();
+        abstract void doSetRate(double permitsPerSecond, double intervalMicros);
         abstract long storedPermitsToWaitTime(double storedPermits, double permitsToTake);
 
         static class SmoothBursty extends SmoothRateLimiter {
@@ -154,7 +157,7 @@ public abstract class RateLimiter {
 
             @Override
             protected double coolDownIntervalMicros() {
-                return intervalMicros;
+                return intervalMicros; // 平滑突发 无CD
             }
 
             void doSetRate(double permitsPerSecond, double intervalMicros) {
@@ -171,6 +174,83 @@ public abstract class RateLimiter {
             long storedPermitsToWaitTime(double storedPermits, double permitsToTake) {
                 return 0;
             }
+        }
+    }
+
+    static class SmoothWarmingUp extends SmoothRateLimiter {
+
+        private final long warmupPeriodMicros;
+        private double slope;
+        private double halfPermits;
+        private double coldFactor;
+
+        public SmoothWarmingUp(SleepingStopWatch stopWatch, long warmupPeriod, TimeUnit timeUnit, double coldFactor) {
+            super(stopWatch);
+            this.warmupPeriodMicros = timeUnit.toMicros(warmupPeriod);
+            this.coldFactor = coldFactor;
+        }
+
+        @Override
+        double coolDownIntervalMicros() {
+            return warmupPeriodMicros / intervalMicros;
+        }
+
+        @Override
+        void doSetRate(double permitsPerSecond, double intervalMicros) {
+            double oldMaxPermits = this.maxPermits;
+            double coldIntervalMicros = intervalMicros * coldFactor;
+            // 临界值=热启动期间所能生成的总令牌数量的一半
+            halfPermits = 0.5 * warmupPeriodMicros / intervalMicros;
+            /**
+             * 根据临界值计算
+             *  等价于 （maxPermits-halfPermits)*(intervalMicros+coldIntervalMicros)=2*warmupPeriodMicros
+             *          ^ throttling
+             *          |
+             *    cold  +                  /
+             * interval |                 /.
+             *          |                / .
+             *          |               /  .   ← 预热区域等于maxPermits halfPermits之间的梯形面积
+             *          |              /   .
+             *          |             /    .
+             *          |            /     .
+             *          |           /      .
+             *   stable +----------/       .
+             * interval |          .       .
+             *          |          .       .
+             *          |          .       .
+             *        0 +----------+-------+--------------→ storedPermits
+             *          |   halfPermits maxPermits
+             *          |          .       .
+             *          |          .       .
+             *          +----------+-------+
+             */
+            maxPermits = halfPermits + 2 * warmupPeriodMicros / (intervalMicros + coldIntervalMicros);
+            slope = (coldIntervalMicros - intervalMicros) / (maxPermits - halfPermits);
+            if (oldMaxPermits == Double.POSITIVE_INFINITY) {
+                storedPermits = 0.0;
+            } else {
+                storedPermits = oldMaxPermits == 0.0 ? maxPermits : storedPermits * maxPermits / oldMaxPermits;
+            }
+        }
+
+        @Override
+        long storedPermitsToWaitTime(double storedPermits, double permitsToTake) {
+            double availablePermitsAboveHalfPermits = storedPermits - halfPermits;
+            long micros = 0;
+            if (availablePermitsAboveHalfPermits > 0.0) {
+                double permitsAboveHalfPermitsToTake = Math.min(availablePermitsAboveHalfPermits, permitsToTake);
+                double topTime = permitsToTime(availablePermitsAboveHalfPermits);
+                double bottomTime = permitsToTime(availablePermitsAboveHalfPermits - permitsAboveHalfPermitsToTake);
+                double avgTime = (topTime + bottomTime) / 2;
+                micros = (long) (permitsAboveHalfPermitsToTake * avgTime);
+                permitsToTake -= permitsAboveHalfPermitsToTake;
+            }
+            micros += (intervalMicros * permitsToTake);
+            return micros;
+        }
+
+        private double permitsToTime(double permits) {
+            return intervalMicros + slope * permits;
         }
     }
 
@@ -204,6 +284,9 @@ public abstract class RateLimiter {
         }
     }
 
+    /**
+     * 计时器
+     */
     static class Stopwatch {
         private boolean isRunning;
         private long elapsedNanos;
@@ -234,6 +317,9 @@ public abstract class RateLimiter {
         }
     }
 
+    /**
+     * 机器时钟（纳秒级）
+     */
     abstract static class Ticker {
         Ticker() {
         }
@@ -250,4 +336,10 @@ public abstract class RateLimiter {
         }
     }
 
+    public static void main(String[] args) {
+        RateLimiter rateLimiter = RateLimiter.create(1);
+        System.out.println(rateLimiter.tryAcquire(1, 1, TimeUnit.MICROSECONDS));
+        System.out.println(rateLimiter.tryAcquire(1, 1, TimeUnit.MICROSECONDS));
+
+    }
 }
