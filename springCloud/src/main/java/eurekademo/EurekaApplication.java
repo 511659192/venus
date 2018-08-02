@@ -1,7 +1,9 @@
 package eurekademo;
 
 import com.alibaba.fastjson.JSON;
+import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
@@ -78,7 +80,7 @@ public class EurekaApplication {
 		Enumeration<URL> urls = (classLoader != null ?
 				classLoader.getResources(FACTORIES_RESOURCE_LOCATION) :
 				ClassLoader.getSystemResources(FACTORIES_RESOURCE_LOCATION));
-		Map<String, PropertyInfo> result = new HashMap<>();
+		Multimap<String, PropertyInfo> result = HashMultimap.create();
 		while (urls.hasMoreElements()) {
 			URL url = urls.nextElement();
 			UrlResource resource = new UrlResource(url);

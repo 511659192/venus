@@ -1,11 +1,38 @@
 {
-  "org.springframework.boot.autoconfigure.AutoConfigurationImportListener": {
+  "org.springframework.boot.autoconfigure.AutoConfigurationImportListener": [{
     "name": [{
       "name": "org.springframework.boot.autoconfigure.condition.ConditionEvaluationReportAutoConfigurationImportListener"
     }],
     "path": "file:/D:/maven-repository/org/springframework/boot/spring-boot-autoconfigure/2.0.2.RELEASE/spring-boot-autoconfigure-2.0.2.RELEASE.jar!/META-INF/spring.factories"
-  },
-  "org.springframework.boot.autoconfigure.EnableAutoConfiguration": {
+  }],
+  "org.springframework.boot.autoconfigure.EnableAutoConfiguration": [{
+    "name": [{
+      "name": "org.springframework.cloud.client.CommonsClientAutoConfiguration"
+    }, {
+      "name": "org.springframework.cloud.client.discovery.composite.CompositeDiscoveryClientAutoConfiguration"
+    }, {
+      "name": "org.springframework.cloud.client.discovery.noop.NoopDiscoveryClientAutoConfiguration"
+    }, {
+      "name": "org.springframework.cloud.client.discovery.simple.SimpleDiscoveryClientAutoConfiguration"
+    }, {
+      "name": "org.springframework.cloud.client.hypermedia.CloudHypermediaAutoConfiguration"
+    }, {
+      "name": "org.springframework.cloud.client.loadbalancer.AsyncLoadBalancerAutoConfiguration"
+    }, {
+      "name": "org.springframework.cloud.client.loadbalancer.LoadBalancerAutoConfiguration"
+    }, {
+      "name": "org.springframework.cloud.client.loadbalancer.reactive.ReactiveLoadBalancerAutoConfiguration"
+    }, {
+      "name": "org.springframework.cloud.client.serviceregistry.ServiceRegistryAutoConfiguration"
+    }, {
+      "name": "org.springframework.cloud.commons.httpclient.HttpClientConfiguration"
+    }, {
+      "name": "org.springframework.cloud.commons.util.UtilAutoConfiguration"
+    }, {
+      "name": "org.springframework.cloud.client.serviceregistry.AutoServiceRegistrationAutoConfiguration"
+    }],
+    "path": "file:/D:/maven-repository/org/springframework/cloud/spring-cloud-commons/2.0.1.BUILD-SNAPSHOT/spring-cloud-commons-2.0.1.BUILD-20180731.175406-336.jar!/META-INF/spring.factories"
+  }, {
     "name": [{
       "name": "org.springframework.boot.autoconfigure.admin.SpringApplicationAdminJmxAutoConfiguration"
     }, {
@@ -226,28 +253,243 @@
       "name": "org.springframework.boot.autoconfigure.webservices.WebServicesAutoConfiguration"
     }],
     "path": "file:/D:/maven-repository/org/springframework/boot/spring-boot-autoconfigure/2.0.2.RELEASE/spring-boot-autoconfigure-2.0.2.RELEASE.jar!/META-INF/spring.factories"
-  },
-  "org.springframework.boot.diagnostics.FailureAnalysisReporter": {
+  }, {
+    "name": [{
+      "name": "org.springframework.boot.actuate.autoconfigure.amqp.RabbitHealthIndicatorAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.audit.AuditAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.audit.AuditEventsEndpointAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.beans.BeansEndpointAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.cassandra.CassandraHealthIndicatorAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.cloudfoundry.servlet.CloudFoundryActuatorAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.cloudfoundry.reactive.ReactiveCloudFoundryActuatorAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.condition.ConditionsReportEndpointAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.context.properties.ConfigurationPropertiesReportEndpointAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.context.ShutdownEndpointAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.couchbase.CouchbaseHealthIndicatorAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.elasticsearch.ElasticsearchHealthIndicatorAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.endpoint.EndpointAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.endpoint.jmx.JmxEndpointAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.env.EnvironmentEndpointAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.flyway.FlywayEndpointAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.health.HealthEndpointAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.health.HealthIndicatorAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.influx.InfluxDbHealthIndicatorAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.info.InfoContributorAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.info.InfoEndpointAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.jdbc.DataSourceHealthIndicatorAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.jms.JmsHealthIndicatorAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.jolokia.JolokiaEndpointAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.ldap.LdapHealthIndicatorAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.liquibase.LiquibaseEndpointAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.logging.LogFileWebEndpointAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.logging.LoggersEndpointAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.mail.MailHealthIndicatorAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.management.HeapDumpWebEndpointAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.management.ThreadDumpEndpointAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.metrics.CompositeMeterRegistryAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.metrics.MetricsAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.metrics.MetricsEndpointAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.metrics.amqp.RabbitMetricsAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.metrics.cache.CacheMetricsAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.metrics.export.atlas.AtlasMetricsExportAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.metrics.export.datadog.DatadogMetricsExportAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.metrics.export.ganglia.GangliaMetricsExportAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.metrics.export.graphite.GraphiteMetricsExportAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.metrics.export.influx.InfluxMetricsExportAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.metrics.export.jmx.JmxMetricsExportAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.metrics.export.newrelic.NewRelicMetricsExportAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.metrics.export.prometheus.PrometheusMetricsExportAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.metrics.export.simple.SimpleMetricsExportAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.metrics.export.signalfx.SignalFxMetricsExportAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.metrics.export.statsd.StatsdMetricsExportAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.metrics.export.wavefront.WavefrontMetricsExportAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.metrics.jdbc.DataSourcePoolMetricsAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.metrics.web.client.RestTemplateMetricsAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.metrics.web.reactive.WebFluxMetricsAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.metrics.web.servlet.WebMvcMetricsAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.metrics.web.tomcat.TomcatMetricsAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.mongo.MongoHealthIndicatorAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.neo4j.Neo4jHealthIndicatorAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.redis.RedisHealthIndicatorAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.scheduling.ScheduledTasksEndpointAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.session.SessionsEndpointAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.solr.SolrHealthIndicatorAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.system.DiskSpaceHealthIndicatorAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.trace.http.HttpTraceAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.trace.http.HttpTraceEndpointAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.web.mappings.MappingsEndpointAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.web.reactive.ReactiveManagementContextAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.web.server.ManagementContextAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.actuate.autoconfigure.web.servlet.ServletManagementContextAutoConfiguration"
+    }],
+    "path": "file:/D:/maven-repository/org/springframework/boot/spring-boot-actuator-autoconfigure/2.0.2.RELEASE/spring-boot-actuator-autoconfigure-2.0.2.RELEASE.jar!/META-INF/spring.factories"
+  }, {
+    "name": [{
+      "name": "org.springframework.cloud.netflix.eureka.config.EurekaClientConfigServerAutoConfiguration"
+    }, {
+      "name": "org.springframework.cloud.netflix.eureka.config.EurekaDiscoveryClientConfigServiceAutoConfiguration"
+    }, {
+      "name": "org.springframework.cloud.netflix.eureka.EurekaClientAutoConfiguration"
+    }, {
+      "name": "org.springframework.cloud.netflix.ribbon.eureka.RibbonEurekaAutoConfiguration"
+    }, {
+      "name": "org.springframework.cloud.netflix.eureka.EurekaDiscoveryClientConfiguration"
+    }],
+    "path": "file:/D:/maven-repository/org/springframework/cloud/spring-cloud-netflix-eureka-client/2.0.1.BUILD-SNAPSHOT/spring-cloud-netflix-eureka-client-2.0.1.BUILD-20180731.170423-338.jar!/META-INF/spring.factories"
+  }, {
+    "name": [{
+      "name": "org.springframework.cloud.netflix.hystrix.HystrixAutoConfiguration"
+    }, {
+      "name": "org.springframework.cloud.netflix.hystrix.security.HystrixSecurityAutoConfiguration"
+    }],
+    "path": "file:/D:/maven-repository/org/springframework/cloud/spring-cloud-netflix-core/2.0.1.BUILD-SNAPSHOT/spring-cloud-netflix-core-2.0.1.BUILD-20180731.170231-341.jar!/META-INF/spring.factories"
+  }, {
+    "name": [{
+      "name": "org.springframework.cloud.netflix.eureka.server.EurekaServerAutoConfiguration"
+    }],
+    "path": "file:/D:/maven-repository/org/springframework/cloud/spring-cloud-netflix-eureka-server/2.0.1.BUILD-SNAPSHOT/spring-cloud-netflix-eureka-server-2.0.1.BUILD-20180731.170623-337.jar!/META-INF/spring.factories"
+  }, {
+    "name": [{
+      "name": "org.springframework.cloud.netflix.ribbon.RibbonAutoConfiguration"
+    }],
+    "path": "file:/D:/maven-repository/org/springframework/cloud/spring-cloud-netflix-ribbon/2.0.1.BUILD-SNAPSHOT/spring-cloud-netflix-ribbon-2.0.1.BUILD-20180731.170148-341.jar!/META-INF/spring.factories"
+  }, {
+    "name": [{
+      "name": "org.springframework.cloud.netflix.archaius.ArchaiusAutoConfiguration"
+    }],
+    "path": "file:/D:/maven-repository/org/springframework/cloud/spring-cloud-netflix-archaius/2.0.1.BUILD-SNAPSHOT/spring-cloud-netflix-archaius-2.0.1.BUILD-20180731.170106-341.jar!/META-INF/spring.factories"
+  }, {
+    "name": [{
+      "name": "org.springframework.cloud.config.client.ConfigClientAutoConfiguration"
+    }],
+    "path": "file:/D:/maven-repository/org/springframework/cloud/spring-cloud-config-client/2.0.1.BUILD-SNAPSHOT/spring-cloud-config-client-2.0.1.BUILD-20180731.180112-337.jar!/META-INF/spring.factories"
+  }, {
+    "name": [{
+      "name": "org.springframework.cloud.autoconfigure.ConfigurationPropertiesRebinderAutoConfiguration"
+    }, {
+      "name": "org.springframework.cloud.autoconfigure.LifecycleMvcEndpointAutoConfiguration"
+    }, {
+      "name": "org.springframework.cloud.autoconfigure.RefreshAutoConfiguration"
+    }, {
+      "name": "org.springframework.cloud.autoconfigure.RefreshEndpointAutoConfiguration"
+    }, {
+      "name": "org.springframework.cloud.autoconfigure.WritableEnvironmentEndpointAutoConfiguration"
+    }],
+    "path": "file:/D:/maven-repository/org/springframework/cloud/spring-cloud-context/2.0.1.BUILD-SNAPSHOT/spring-cloud-context-2.0.1.BUILD-20180731.175254-336.jar!/META-INF/spring.factories"
+  }],
+  "org.springframework.boot.diagnostics.FailureAnalysisReporter": [{
     "name": [{
       "name": "org.springframework.boot.diagnostics.LoggingFailureAnalysisReporter"
     }],
     "path": "file:/D:/maven-repository/org/springframework/boot/spring-boot/2.0.2.RELEASE/spring-boot-2.0.2.RELEASE.jar!/META-INF/spring.factories"
-  },
-  "org.springframework.cloud.bootstrap.BootstrapConfiguration": {
+  }],
+  "org.springframework.cloud.bootstrap.BootstrapConfiguration": [{
+    "name": [{
+      "name": "org.springframework.cloud.netflix.eureka.config.EurekaDiscoveryClientConfigServiceBootstrapConfiguration"
+    }],
+    "path": "file:/D:/maven-repository/org/springframework/cloud/spring-cloud-netflix-eureka-client/2.0.1.BUILD-SNAPSHOT/spring-cloud-netflix-eureka-client-2.0.1.BUILD-20180731.170423-338.jar!/META-INF/spring.factories"
+  }, {
     "name": [{
       "name": "org.springframework.cloud.config.client.ConfigServiceBootstrapConfiguration"
     }, {
       "name": "org.springframework.cloud.config.client.DiscoveryClientConfigServiceBootstrapConfiguration"
     }],
     "path": "file:/D:/maven-repository/org/springframework/cloud/spring-cloud-config-client/2.0.1.BUILD-SNAPSHOT/spring-cloud-config-client-2.0.1.BUILD-20180731.180112-337.jar!/META-INF/spring.factories"
-  },
-  "org.springframework.boot.SpringApplicationRunListener": {
+  }, {
+    "name": [{
+      "name": "org.springframework.cloud.bootstrap.config.PropertySourceBootstrapConfiguration"
+    }, {
+      "name": "org.springframework.cloud.bootstrap.encrypt.EncryptionBootstrapConfiguration"
+    }, {
+      "name": "org.springframework.cloud.autoconfigure.ConfigurationPropertiesRebinderAutoConfiguration"
+    }, {
+      "name": "org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration"
+    }],
+    "path": "file:/D:/maven-repository/org/springframework/cloud/spring-cloud-context/2.0.1.BUILD-SNAPSHOT/spring-cloud-context-2.0.1.BUILD-20180731.175254-336.jar!/META-INF/spring.factories"
+  }],
+  "org.springframework.boot.SpringApplicationRunListener": [{
     "name": [{
       "name": "org.springframework.boot.context.event.EventPublishingRunListener"
     }],
     "path": "file:/D:/maven-repository/org/springframework/boot/spring-boot/2.0.2.RELEASE/spring-boot-2.0.2.RELEASE.jar!/META-INF/spring.factories"
-  },
-  "org.springframework.context.ApplicationListener": {
+  }],
+  "org.springframework.context.ApplicationListener": [{
+    "name": [{
+      "name": "org.springframework.cloud.bootstrap.BootstrapApplicationListener"
+    }, {
+      "name": "org.springframework.cloud.bootstrap.LoggingSystemShutdownListener"
+    }, {
+      "name": "org.springframework.cloud.context.restart.RestartListener"
+    }],
+    "path": "file:/D:/maven-repository/org/springframework/cloud/spring-cloud-context/2.0.1.BUILD-SNAPSHOT/spring-cloud-context-2.0.1.BUILD-20180731.175254-336.jar!/META-INF/spring.factories"
+  }, {
     "name": [{
       "name": "org.springframework.boot.ClearCachesApplicationListener"
     }, {
@@ -268,8 +510,13 @@
       "name": "org.springframework.boot.liquibase.LiquibaseServiceLocatorApplicationListener"
     }],
     "path": "file:/D:/maven-repository/org/springframework/boot/spring-boot/2.0.2.RELEASE/spring-boot-2.0.2.RELEASE.jar!/META-INF/spring.factories"
-  },
-  "org.springframework.boot.autoconfigure.template.TemplateAvailabilityProvider": {
+  }, {
+    "name": [{
+      "name": "org.springframework.boot.autoconfigure.BackgroundPreinitializer"
+    }],
+    "path": "file:/D:/maven-repository/org/springframework/boot/spring-boot-autoconfigure/2.0.2.RELEASE/spring-boot-autoconfigure-2.0.2.RELEASE.jar!/META-INF/spring.factories"
+  }],
+  "org.springframework.boot.autoconfigure.template.TemplateAvailabilityProvider": [{
     "name": [{
       "name": "org.springframework.boot.autoconfigure.freemarker.FreeMarkerTemplateAvailabilityProvider"
     }, {
@@ -282,14 +529,14 @@
       "name": "org.springframework.boot.autoconfigure.web.servlet.JspTemplateAvailabilityProvider"
     }],
     "path": "file:/D:/maven-repository/org/springframework/boot/spring-boot-autoconfigure/2.0.2.RELEASE/spring-boot-autoconfigure-2.0.2.RELEASE.jar!/META-INF/spring.factories"
-  },
-  "org.springframework.beans.BeanInfoFactory": {
+  }],
+  "org.springframework.beans.BeanInfoFactory": [{
     "name": [{
       "name": "org.springframework.beans.ExtendedBeanInfoFactory"
     }],
     "path": "file:/D:/maven-repository/org/springframework/spring-beans/5.0.6.RELEASE/spring-beans-5.0.6.RELEASE.jar!/META-INF/spring.factories"
-  },
-  "org.springframework.boot.actuate.autoconfigure.web.ManagementContextConfiguration": {
+  }],
+  "org.springframework.boot.actuate.autoconfigure.web.ManagementContextConfiguration": [{
     "name": [{
       "name": "org.springframework.boot.actuate.autoconfigure.endpoint.web.ServletEndpointManagementContextConfiguration"
     }, {
@@ -308,22 +555,38 @@
       "name": "org.springframework.boot.actuate.autoconfigure.web.servlet.WebMvcEndpointChildContextConfiguration"
     }],
     "path": "file:/D:/maven-repository/org/springframework/boot/spring-boot-actuator-autoconfigure/2.0.2.RELEASE/spring-boot-actuator-autoconfigure-2.0.2.RELEASE.jar!/META-INF/spring.factories"
-  },
-  "org.springframework.boot.env.PropertySourceLoader": {
+  }],
+  "org.springframework.boot.env.PropertySourceLoader": [{
     "name": [{
       "name": "org.springframework.boot.env.PropertiesPropertySourceLoader"
     }, {
       "name": "org.springframework.boot.env.YamlPropertySourceLoader"
     }],
     "path": "file:/D:/maven-repository/org/springframework/boot/spring-boot/2.0.2.RELEASE/spring-boot-2.0.2.RELEASE.jar!/META-INF/spring.factories"
-  },
-  "org.springframework.boot.autoconfigure.AutoConfigurationImportFilter": {
+  }],
+  "org.springframework.boot.autoconfigure.AutoConfigurationImportFilter": [{
     "name": [{
       "name": "org.springframework.boot.autoconfigure.condition.OnClassCondition"
     }],
     "path": "file:/D:/maven-repository/org/springframework/boot/spring-boot-autoconfigure/2.0.2.RELEASE/spring-boot-autoconfigure-2.0.2.RELEASE.jar!/META-INF/spring.factories"
-  },
-  "org.springframework.boot.diagnostics.FailureAnalyzer": {
+  }],
+  "org.springframework.boot.diagnostics.FailureAnalyzer": [{
+    "name": [{
+      "name": "org.springframework.boot.autoconfigure.diagnostics.analyzer.NoSuchBeanDefinitionFailureAnalyzer"
+    }, {
+      "name": "org.springframework.boot.autoconfigure.jdbc.DataSourceBeanCreationFailureAnalyzer"
+    }, {
+      "name": "org.springframework.boot.autoconfigure.jdbc.HikariDriverConfigurationFailureAnalyzer"
+    }, {
+      "name": "org.springframework.boot.autoconfigure.session.NonUniqueSessionRepositoryFailureAnalyzer"
+    }],
+    "path": "file:/D:/maven-repository/org/springframework/boot/spring-boot-autoconfigure/2.0.2.RELEASE/spring-boot-autoconfigure-2.0.2.RELEASE.jar!/META-INF/spring.factories"
+  }, {
+    "name": [{
+      "name": "org.springframework.boot.actuate.autoconfigure.metrics.MissingRequiredConfigurationFailureAnalyzer"
+    }],
+    "path": "file:/D:/maven-repository/org/springframework/boot/spring-boot-actuator-autoconfigure/2.0.2.RELEASE/spring-boot-actuator-autoconfigure-2.0.2.RELEASE.jar!/META-INF/spring.factories"
+  }, {
     "name": [{
       "name": "org.springframework.boot.diagnostics.analyzer.BeanCurrentlyInCreationFailureAnalyzer"
     }, {
@@ -348,14 +611,19 @@
       "name": "org.springframework.boot.diagnostics.analyzer.InvalidConfigurationPropertyValueFailureAnalyzer"
     }],
     "path": "file:/D:/maven-repository/org/springframework/boot/spring-boot/2.0.2.RELEASE/spring-boot-2.0.2.RELEASE.jar!/META-INF/spring.factories"
-  },
-  "org.springframework.boot.SpringBootExceptionReporter": {
+  }],
+  "org.springframework.boot.SpringBootExceptionReporter": [{
     "name": [{
       "name": "org.springframework.boot.diagnostics.FailureAnalyzers"
     }],
     "path": "file:/D:/maven-repository/org/springframework/boot/spring-boot/2.0.2.RELEASE/spring-boot-2.0.2.RELEASE.jar!/META-INF/spring.factories"
-  },
-  "org.springframework.boot.env.EnvironmentPostProcessor": {
+  }],
+  "org.springframework.boot.env.EnvironmentPostProcessor": [{
+    "name": [{
+      "name": "org.springframework.cloud.client.HostInfoEnvironmentPostProcessor"
+    }],
+    "path": "file:/D:/maven-repository/org/springframework/cloud/spring-cloud-commons/2.0.1.BUILD-SNAPSHOT/spring-cloud-commons-2.0.1.BUILD-20180731.175406-336.jar!/META-INF/spring.factories"
+  }, {
     "name": [{
       "name": "org.springframework.boot.cloud.CloudFoundryVcapEnvironmentPostProcessor"
     }, {
@@ -364,8 +632,8 @@
       "name": "org.springframework.boot.env.SystemEnvironmentPropertySourceEnvironmentPostProcessor"
     }],
     "path": "file:/D:/maven-repository/org/springframework/boot/spring-boot/2.0.2.RELEASE/spring-boot-2.0.2.RELEASE.jar!/META-INF/spring.factories"
-  },
-  "org.springframework.context.ApplicationContextInitializer": {
+  }],
+  "org.springframework.context.ApplicationContextInitializer": [{
     "name": [{
       "name": "org.springframework.boot.context.ConfigurationWarningsApplicationContextInitializer"
     }, {
@@ -376,11 +644,18 @@
       "name": "org.springframework.boot.web.context.ServerPortInfoApplicationContextInitializer"
     }],
     "path": "file:/D:/maven-repository/org/springframework/boot/spring-boot/2.0.2.RELEASE/spring-boot-2.0.2.RELEASE.jar!/META-INF/spring.factories"
-  },
-  "org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker": {
+  }, {
+    "name": [{
+      "name": "org.springframework.boot.autoconfigure.SharedMetadataReaderFactoryContextInitializer"
+    }, {
+      "name": "org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener"
+    }],
+    "path": "file:/D:/maven-repository/org/springframework/boot/spring-boot-autoconfigure/2.0.2.RELEASE/spring-boot-autoconfigure-2.0.2.RELEASE.jar!/META-INF/spring.factories"
+  }],
+  "org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker": [{
     "name": [{
       "name": "org.springframework.cloud.netflix.hystrix.HystrixCircuitBreakerConfiguration"
     }],
     "path": "file:/D:/maven-repository/org/springframework/cloud/spring-cloud-netflix-core/2.0.1.BUILD-SNAPSHOT/spring-cloud-netflix-core-2.0.1.BUILD-20180731.170231-341.jar!/META-INF/spring.factories"
-  }
+  }]
 }
