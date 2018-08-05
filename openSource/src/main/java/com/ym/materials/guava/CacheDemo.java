@@ -34,6 +34,13 @@ public class CacheDemo {
 
     private static Log log = new Log();
 
+    public static void main(String[] args) {
+        LoadingCache<String, Employee> cache = CacheBuilder.newBuilder()
+                .maximumSize(1002)
+                .initialCapacity(102)
+                .build(CacheLoaderCreatetor.createCacheLoader());
+    }
+
     @Test
     public void testBaisc() throws ExecutionException, InterruptedException {
         LoadingCache<String, Employee> cache = CacheBuilder.newBuilder()
