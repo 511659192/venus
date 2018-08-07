@@ -14,7 +14,8 @@ public interface StatsCounter {
 
     void recordHits(int i);
 
-    Supplier<? extends StatsCounter> NULL_STATS_COUNTER = Suppliers.ofInstance(new StatsCounter() {
+    Supplier<? extends StatsCounter> NULL_STATS_COUNTER = Suppliers.ofInstance(new StatsCounter()
+    {
         @Override
         public CacheStats snapshot() {
             return CacheStats.EMPTY_STATS;
@@ -29,5 +30,12 @@ public interface StatsCounter {
         public void recordHits(int i) {
 
         }
+
+        @Override
+        public void recordMisses(int i) {
+
+        }
     });
+
+    void recordMisses(int i);
 }

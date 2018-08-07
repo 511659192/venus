@@ -77,6 +77,7 @@ class LocalCache<K, V> {
         int initialCapacity = Math.min(builder.getInitialCapacity(), MAXIMUM_CAPACITY);
         this.ticker = builder.getTicker(recordsTime());
         this.globalStatsCounter = builder.getStatsCounterSupplier().get();
+        entryFactory = EntryFactory.getFactory(keyStrength, usesAccessQueue(), usesWriteQueue());
 
         int segmentShift = 0;
         int segmentCount = 1;
@@ -273,7 +274,9 @@ class LocalCache<K, V> {
                 long now = localCache.ticker.read();
                 preWriteCleanUp(now);
                 int newCount = this.count - 1;
-                ReferenceEntry<K, V> first = getFirst(hash);
+                AtomicReferenceArray<ReferenceEntry<K, V>> table = this.table;
+                int index = hash & (table.length() - 1);
+                ReferenceEntry<K, V> first = table.get(index);
                 for (e = first; e != null; e = e.getNext()) {
                     K entryKey = e.getKey();
                     if (e.getHash() == hash && entryKey != null && localCache.keyEquivalence.equivalent(key, entryKey)) {
@@ -302,14 +305,44 @@ class LocalCache<K, V> {
                 if (createNewEntry) {
                     loadingValueReference = new LoadingValueReference();
                     if (e == null) {
-                        e = createNewEntry
+                        e = newEntry(key, hash, first);
+                        e.setValueReference(loadingValueReference);
+                        table.set(index, e);
+                    } else {
+                        e.setValueReference(loadingValueReference);
                     }
                 }
 
             } finally {
                 unlock();
+                postWriteCleanUp();
             }
 
+            if (createNewEntry) {
+                try {
+                    synchronized (e) {
+                        return loadSync(key, hash, loadingValueReference, loader);
+                    }
+                } finally {
+                    statsCounter.recordMisses(1);
+                }
+            } else {
+                return waitForLoadingValue(e, key, valueReference);
+            }
+        }
+
+        private V waitForLoadingValue(ReferenceEntry<K, V> e, K key, ValueReference<K, V> valueReference) {
+            return null;
+        }
+
+        private V loadSync(K key, int hash, LoadingValueReference loadingValueReference, CacheLoader<? super K, V> loader) {
+            loadingValueReference.loadFuture(key, loader);
+
+            return null;
+        }
+
+        private ReferenceEntry<K,V> newEntry(K key, int hash, ReferenceEntry<K, V> next) {
+            return localCache.entryFactory.newEntry(this, key, hash, next);
         }
 
         private void recordLockedRead(ReferenceEntry<K, V> entry, long now) {

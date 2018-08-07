@@ -1,13 +1,14 @@
 package com.ym.materials.guava.cache;
 
+import com.google.common.base.Function;
 import com.google.common.base.Stopwatch;
-import com.google.common.util.concurrent.SettableFuture;
-import com.google.common.util.concurrent.Uninterruptibles;
+import com.google.common.util.concurrent.*;
 
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
 
 /**
  * Created by ym on 2018/8/5.
@@ -216,6 +217,41 @@ public interface ValueReference<K, V> {
         @Override
         public ReferenceEntry<K, V> getEntry() {
             return null;
+        }
+
+        public ListenableFuture<V> loadFuture(K key, CacheLoader<? super K, V> loader) {
+            try {
+                stopwatch.start();
+                V previousValue = oldValue.get();
+                if (previousValue == null) {
+                    V newValue = loader.load(key);
+                    return newValue != null ? futureValue : Futures.immediateFuture(null);
+                }
+                ListenableFuture<V> newValue = loader.reload(key, previousValue);
+                if (newValue == null) {
+                    return Futures.immediateCheckedFuture(null);
+                }
+
+                Function<V, V> function = new Function<V, V>() {
+                    @Override
+                    public V apply(V newValue) {
+                        set(newValue);
+                        return newValue;
+                    }
+                };
+
+                return Futures.transform(newValue, function, MoreExecutors.directExecutor());
+            } catch (Throwable throwable) {
+                ListenableFuture<V> listenableFuture = setException(throwable) ? futureValue : Futures.immediateFailedFuture(throwable);
+                if (throwable instanceof InterruptedException) {
+                    Thread.currentThread().interrupt();
+                }
+                return listenableFuture;
+            }
+        }
+
+        public boolean setException(Throwable exception) {
+            return futureValue.setException(exception);
         }
     }
 

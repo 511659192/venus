@@ -2,7 +2,9 @@ package com.ym.materials.guava.cache;
 
 import com.sun.istack.internal.Nullable;
 import com.ym.materials.guava.cache.LocalCache.Segment;
+import com.ym.materials.guava.cache.ReferenceEntry.StrongAccessEntry;
 import com.ym.materials.guava.cache.ReferenceEntry.StrongAccessWriteEntry;
+import com.ym.materials.guava.cache.ReferenceEntry.StrongEntry;
 import com.ym.materials.guava.cache.ReferenceEntry.StrongWriteEntry;
 
 import static com.ym.materials.guava.cache.ReferenceEntryUtils.connectAccessOrder;
@@ -16,13 +18,13 @@ public enum  EntryFactory {
     STRONG {
         @Override
         <K, V> ReferenceEntry<K, V> newEntry(Segment<K, V> segment, K key, int hash, ReferenceEntry<K, V> next) {
-            return new ReferenceEntry.StrongEntry<K, V>(key, hash, next);
+            return new StrongEntry<K, V>(key, hash, next);
         }
     },
     STRONG_ACCESS {
         @Override
         <K, V> ReferenceEntry<K, V> newEntry(Segment<K, V> segment, K key, int hash, ReferenceEntry<K, V> next) {
-            return new ReferenceEntry.StrongAccessEntry<>(key, hash, next);
+            return new StrongAccessEntry<K, V>(key, hash, next);
         }
 
         @Override
@@ -36,7 +38,7 @@ public enum  EntryFactory {
         @Override
         <K, V> ReferenceEntry<K, V> newEntry(
                 Segment<K, V> segment, K key, int hash, @Nullable ReferenceEntry<K, V> next) {
-            return new StrongWriteEntry<>(key, hash, next);
+            return new StrongWriteEntry<K, V>(key, hash, next);
         }
 
         @Override
@@ -51,7 +53,7 @@ public enum  EntryFactory {
         @Override
         <K, V> ReferenceEntry<K, V> newEntry(
                 Segment<K, V> segment, K key, int hash, @Nullable ReferenceEntry<K, V> next) {
-            return new StrongAccessWriteEntry<>(key, hash, next);
+            return new StrongAccessWriteEntry<K, V>(key, hash, next);
         }
 
         @Override
