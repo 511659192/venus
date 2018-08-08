@@ -5,6 +5,9 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Ticker;
 import com.google.common.cache.*;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.Uninterruptibles;
 import com.sun.org.apache.regexp.internal.RE;
 import com.ym.materials.guava.cache.RemovalListener.NullListener;
 import com.ym.materials.guava.cache.ValueReference.LoadingValueReference;
@@ -24,8 +27,10 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.util.concurrent.Uninterruptibles.getUninterruptibly;
 import static com.ym.materials.guava.cache.Queues.DISCARDING_QUEUE;
 import static com.ym.materials.guava.cache.Queues.discardingQueue;
+import static com.ym.materials.guava.cache.ValueReference.UNSET;
 
 /**
  * Created by ym on 2018/8/4.
@@ -242,26 +247,20 @@ class LocalCache<K, V> {
 
             this.recencyQueue = localCache.usesAccessQueue() ? new ConcurrentLinkedDeque<ReferenceEntry<K, V>>() : discardingQueue();
             this.writeQueue = localCache.usesWriteQueue() ? new ConcurrentLinkedDeque<ReferenceEntry<K, V>>() : discardingQueue();
-            this.accessQueue = null;
-
+            this.accessQueue = localCache.usesAccessQueue() ? new ConcurrentLinkedDeque<ReferenceEntry<K, V>>() : discardingQueue();
         }
 
-        public V get(K key, int hash, CacheLoader<? super K, V> loader) {
+        public V get(K key, int hash, CacheLoader<? super K, V> loader) throws ExecutionException {
             checkNotNull(key);
             checkNotNull(loader);
             try {
                 if (count == 0) {
                     return lockedGetOrLoad(key, hash, loader);
                 }
-
-            } catch (ExecutionException e) {
-
+                return null;
             } finally {
-
+                postWriteCleanUp();
             }
-
-            return null;
-
         }
 
         private V lockedGetOrLoad(K key, int hash, CacheLoader<? super K, V> loader) throws ExecutionException {
@@ -312,7 +311,6 @@ class LocalCache<K, V> {
                         e.setValueReference(loadingValueReference);
                     }
                 }
-
             } finally {
                 unlock();
                 postWriteCleanUp();
@@ -335,10 +333,99 @@ class LocalCache<K, V> {
             return null;
         }
 
-        private V loadSync(K key, int hash, LoadingValueReference loadingValueReference, CacheLoader<? super K, V> loader) {
-            loadingValueReference.loadFuture(key, loader);
+        private V loadSync(K key, int hash, LoadingValueReference loadingValueReference, CacheLoader<? super K, V> loader) throws ExecutionException {
+            ListenableFuture<V> loadingFuture = loadingValueReference.loadFuture(key, loader);
+            return getAndRecordStats(key, hash, loadingValueReference, loadingFuture);
+        }
 
-            return null;
+        private V getAndRecordStats(K key, int hash, LoadingValueReference loadingValueReference, ListenableFuture<V> loadingFuture) throws ExecutionException {
+            V value = null;
+            try {
+                value = getUninterruptibly(loadingFuture);
+                if (value == null) {
+                    throw new com.google.common.cache.CacheLoader.InvalidCacheLoadException("cacheload ret null for key " + key);
+                }
+                statsCounter.recordLoadSuccess(loadingValueReference.elapsedNanos());
+                storeLoadedValue(key, hash, loadingValueReference, value);
+                return value;
+            } finally {
+                if (value == null) {
+                    statsCounter.recordLoadException(loadingValueReference.elapsedNanos());
+                    removeLoadingValue(key, hash, loadingValueReference);
+                }
+            }
+        }
+
+        private void removeLoadingValue(K key, int hash, LoadingValueReference loadingValueReference) {
+
+        }
+
+        private void storeLoadedValue(K key, int hash, LoadingValueReference oldValueReference, V newValue) {
+            lock();
+            try {
+                long now = localCache.ticker.read();
+                preWriteCleanUp(now);
+
+                int newCount = this.count + 1;
+                if (newCount > this.threshold) {
+                    expand();
+                    newCount = this.count + 1;
+                }
+
+                AtomicReferenceArray<ReferenceEntry<K, V>> table = this.table;
+                int index = hash & (table.length() - 1);
+                ReferenceEntry<K, V> first = table.get(index);
+
+                for (ReferenceEntry<K, V> e = first; e != null; e = e.getNext()) {
+                    K entryKey = e.getKey();
+                    if (e.getHash() == hash && entryKey != null && localCache.keyEquivalence.equivalent(key, entryKey)) {
+                        ValueReference<K, V> valueReference = e.getValueReference();
+                        V entryValue = valueReference.get();
+                        if (oldValueReference == valueReference || (entryValue == null && valueReference != UNSET)) {
+                            ++modCount;
+                            if (oldValueReference.isActive()) {
+                                RemovalCause cause = entryValue == null ? RemovalCause.COLLECTED : RemovalCause.REPLACED;
+                                enqueueNotification(key, hash, entryValue, cause);
+                                newCount--;
+                            }
+                            setValue(e, key, newValue, now);
+                        }
+                    }
+
+                }
+
+            } finally {
+                unlock();
+            }
+        }
+
+        private void setValue(ReferenceEntry<K, V> entry, K key, V value, long now) {
+            ValueReference<K, V> previous = entry.getValueReference();
+            ValueReference<K, V> valueReference = localCache.valueStrength.referenceValue(this, entry, value);
+            entry.setValueReference(valueReference);
+            recordWrite(entry, now);
+            previous.notifyNewValue(value);
+        }
+
+        void recordWrite(ReferenceEntry<K, V> entry, long now) {
+            drainRecencyQueue();
+            totalSize--;
+            if (localCache.recordsAccess()) {
+                entry.setAccessTime(now);
+            }
+            if (localCache.recordsWrite()) {
+                entry.setWriteTime(now);
+            }
+            accessQueue.add(entry);
+            writeQueue.add(entry);
+        }
+
+        private void drainRecencyQueue() {
+        }
+
+        private void expand() {
+
+
         }
 
         private ReferenceEntry<K,V> newEntry(K key, int hash, ReferenceEntry<K, V> next) {

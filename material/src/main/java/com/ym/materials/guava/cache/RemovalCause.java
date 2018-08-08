@@ -16,6 +16,12 @@ public enum  RemovalCause {
         boolean wasEvicted() {
             return true;
         }
+    },
+    REPLACED {
+        @Override
+        boolean wasEvicted() {
+            return false;
+        }
     };
 
     abstract boolean wasEvicted();

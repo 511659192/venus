@@ -35,7 +35,21 @@ public interface StatsCounter {
         public void recordMisses(int i) {
 
         }
+
+        @Override
+        public void recordLoadSuccess(long elapsedNanos) {
+
+        }
+
+        @Override
+        public void recordLoadException(long elapsedNanos) {
+
+        }
     });
 
     void recordMisses(int i);
+
+    void recordLoadSuccess(long elapsedNanos);
+
+    void recordLoadException(long elapsedNanos);
 }

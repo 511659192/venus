@@ -7,8 +7,10 @@ import com.google.common.util.concurrent.*;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
+import java.sql.Time;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by ym on 2018/8/5.
@@ -211,7 +213,7 @@ public interface ValueReference<K, V> {
         }
 
         private boolean set(V newValue) {
-            return futureValue.set(newValue);
+            return newValue == null ? false : futureValue.set(newValue);
         }
 
         @Override
@@ -225,7 +227,7 @@ public interface ValueReference<K, V> {
                 V previousValue = oldValue.get();
                 if (previousValue == null) {
                     V newValue = loader.load(key);
-                    return newValue != null ? futureValue : Futures.immediateFuture(null);
+                    return set(newValue) ? futureValue : Futures.immediateFuture(null);
                 }
                 ListenableFuture<V> newValue = loader.reload(key, previousValue);
                 if (newValue == null) {
@@ -252,6 +254,10 @@ public interface ValueReference<K, V> {
 
         public boolean setException(Throwable exception) {
             return futureValue.setException(exception);
+        }
+
+        public long elapsedNanos() {
+            return stopwatch.elapsed(TimeUnit.NANOSECONDS);
         }
     }
 

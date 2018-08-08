@@ -34,11 +34,21 @@ public class CacheDemo {
 
     private static Log log = new Log();
 
-    public static void main(String[] args) {
-        LoadingCache<String, Employee> cache = CacheBuilder.newBuilder()
-                .maximumSize(1002)
-                .initialCapacity(102)
-                .build(CacheLoaderCreatetor.createCacheLoader());
+    public static void main(String[] args) throws ExecutionException {
+        LoadingCache<String, String> cache = CacheBuilder.newBuilder()
+                .build(new CacheLoader<String, String>() {
+                    @Override
+                    public String load(String key) throws Exception {
+                        return key;
+                    }
+                });
+
+        cache.get("name3");
+        cache.get("name4");
+        cache.get("name5");
+        cache.get("name9");
+        cache.get("name11");
+        cache.get("name12");
     }
 
     @Test
