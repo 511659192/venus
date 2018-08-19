@@ -13,6 +13,7 @@
         <module>openSource</module>
         <module>materials2</module>
         <module>springCloud</module>
+        <module>lua</module>
     </modules>
     <packaging>pom</packaging>
 

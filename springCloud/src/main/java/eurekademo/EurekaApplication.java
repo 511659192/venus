@@ -100,10 +100,8 @@ public class EurekaApplication {
 		ConfigurableApplicationContext context = SpringApplication.run(EurekaApplication.class, args);
 		System.out.println(context);
 		// 静态读取配置信息
-		System.out.println(context.getBean(MyImportSelector.class));
-		System.out.println(context.getBean(Market.class));
-		System.out.println(context.getBean(Sales.class));
-        System.out.println(context.getBean(EurekaServerMarkerConfiguration.class));
+		System.out.println(context.getBean(User.class));
+        System.out.println(context.getBean(Group.class));
     }
 
 }
