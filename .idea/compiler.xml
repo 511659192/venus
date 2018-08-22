@@ -6,6 +6,7 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="lua" />
         <module name="material" />
         <module name="materials2" />
         <module name="openSource" />
@@ -14,6 +15,7 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="lua" target="1.8" />
       <module name="material" target="1.8" />
       <module name="materials2" target="1.8" />
       <module name="openSource" target="1.8" />
