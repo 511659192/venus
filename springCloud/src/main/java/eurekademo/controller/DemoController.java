@@ -27,7 +27,8 @@ public class DemoController {
         Long lv = Long.valueOf(1);
         cacheService.getById(lv);
         cacheService.getById(lv);
-        cacheService.getById(lv);
+        cacheService.getById2(lv);
+        cacheService.getById2(lv);
         return "test";
     }
 }

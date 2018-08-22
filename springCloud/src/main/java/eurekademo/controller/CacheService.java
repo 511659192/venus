@@ -18,4 +18,9 @@ public class CacheService {
     public void getById(Long id) {
         System.out.println("id");
     }
+
+
+    public void getById2(Long id) {
+        System.out.println("id");
+    }
 }

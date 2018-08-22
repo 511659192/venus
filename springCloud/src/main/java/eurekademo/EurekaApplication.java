@@ -7,6 +7,7 @@ import com.google.common.collect.Multimap;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cglib.core.DebuggingClassWriter;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.cloud.netflix.eureka.server.EnableEurekaServer;
 import org.springframework.cloud.netflix.eureka.server.EurekaServerMarkerConfiguration;
@@ -32,6 +33,7 @@ import java.util.concurrent.Executors;
 //@EnableEurekaClient
 public class EurekaApplication {
 	public static void main(String[] args) throws Exception {
+//		System.setProperty(DebuggingClassWriter.DEBUG_LOCATION_PROPERTY,Thread.currentThread().getContextClassLoader().getResource("").getPath());
 
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
