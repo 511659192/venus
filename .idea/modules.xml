@@ -7,6 +7,7 @@
       <module fileurl="file://$PROJECT_DIR$/material/material.iml" filepath="$PROJECT_DIR$/material/material.iml" />
       <module fileurl="file://$PROJECT_DIR$/materials2/materials2.iml" filepath="$PROJECT_DIR$/materials2/materials2.iml" />
       <module fileurl="file://$PROJECT_DIR$/openSource/openSource.iml" filepath="$PROJECT_DIR$/openSource/openSource.iml" />
+      <module fileurl="file://$PROJECT_DIR$/openrestry/openrestry.iml" filepath="$PROJECT_DIR$/openrestry/openrestry.iml" />
       <module fileurl="file://$PROJECT_DIR$/springBoot2/springBoot2.iml" filepath="$PROJECT_DIR$/springBoot2/springBoot2.iml" />
       <module fileurl="file://$PROJECT_DIR$/springCloud/springCloud.iml" filepath="$PROJECT_DIR$/springCloud/springCloud.iml" />
       <module fileurl="file://$PROJECT_DIR$/venus.iml" filepath="$PROJECT_DIR$/venus.iml" />
