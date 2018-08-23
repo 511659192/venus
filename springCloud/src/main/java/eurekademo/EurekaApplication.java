@@ -12,8 +12,7 @@ import org.springframework.cloud.netflix.eureka.server.EurekaServerMarkerConfigu
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.io.UrlResource;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.util.StringUtils;
 
 import java.net.URL;
@@ -74,6 +73,8 @@ public class EurekaApplication {
 
 
 	public static void main(String[] args) throws Exception {
+//	    String path = "/Users/cdyangmeng/work/projects/venus/springCloud/coces";
+//        System.setProperty(DebuggingClassWriter.DEBUG_LOCATION_PROPERTY, path);
 
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 

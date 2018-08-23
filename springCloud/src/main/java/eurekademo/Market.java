@@ -5,4 +5,8 @@ package eurekademo;
  */
 public class Market {
 
+    public static void main(String[] args) {
+        System.out.println(Market.class.getClassLoader().getResource("").getPath());
+    }
+
 }

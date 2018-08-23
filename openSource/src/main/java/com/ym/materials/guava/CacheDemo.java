@@ -1,13 +1,17 @@
 package com.ym.materials.guava;
 
+import com.alibaba.fastjson.JSON;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Optional;
 import com.google.common.cache.*;
+import com.google.common.collect.Lists;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -36,6 +40,10 @@ public class CacheDemo {
 
     public static void main(String[] args) throws ExecutionException {
         LoadingCache<String, String> cache = CacheBuilder.newBuilder()
+                .expireAfterAccess(1, TimeUnit.HOURS)
+                .expireAfterWrite(1, TimeUnit.HOURS)
+                .refreshAfterWrite(1, TimeUnit.HOURS)
+                .softValues()
                 .build(new CacheLoader<String, String>() {
                     @Override
                     public String load(String key) throws Exception {
@@ -43,12 +51,20 @@ public class CacheDemo {
                     }
                 });
 
+//        cache.get("name");
+//        cache.get("name1");
+//        cache.get("name2");
         cache.get("name3");
         cache.get("name4");
-        cache.get("name5");
-        cache.get("name9");
-        cache.get("name11");
-        cache.get("name12");
+        cache.get("name3");
+//        cache.get("name5");
+//        cache.get("name6");
+//        cache.get("name7");
+//        cache.get("name8");
+//        cache.get("name9");
+//        cache.get("name10");
+//        cache.get("name11");
+//        cache.get("name12");
     }
 
     @Test

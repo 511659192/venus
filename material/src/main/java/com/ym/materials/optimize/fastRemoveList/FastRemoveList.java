@@ -60,14 +60,14 @@ public class FastRemoveList<T> {
     }
 
     private final static class SimpleMap<K, V> {
-        private final Entry<K, V>[] buckets;
+        public final Entry<K, V>[] buckets;
         private final int indexMask;
 
         private SimpleMap() {
             throw new RuntimeException("not support");
         }
 
-        static final int tableSizeFor(int cap) {
+        private static final int tableSizeFor(int cap) {
             int n = cap - 1;
             n |= n >>> 1;
             n |= n >>> 2;
@@ -159,6 +159,10 @@ public class FastRemoveList<T> {
             words[wordIndex] = word; // 替换现有值
         }
         size--;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(Long.toBinaryString(64));
     }
 
     private int wordIndex(int index) {

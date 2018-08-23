@@ -5,6 +5,10 @@ package com.ym.materials.optimize.fastRemoveList;
  */
 public class Vo {
 
+    public static void main(String[] args) {
+        System.out.println(68 / 64);
+    }
+
     private String name;
 
     public Vo(String name) {
