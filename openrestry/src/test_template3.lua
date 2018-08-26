@@ -14,7 +14,16 @@ local resp, err = httpc:request_uri("http://127.0.0.1:8761", {
 })
 
 local context = cjson.decode(resp.body)
-local template = require("resty.template")
-template.render("html/example/templates/template.html", context)
 
+
+resp, err = httpc:request_uri("http://127.0.0.1:8761", {
+    method = "POST",
+    path = "/test/thymeleaf1",
+})
+local html = resp.body
+
+local template = require("template")
+template.render(html, context)
+
+ngx_print("--------------------------------++++")
 httpc:close()

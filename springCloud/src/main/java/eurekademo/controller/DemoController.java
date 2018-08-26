@@ -9,6 +9,7 @@ import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
@@ -37,9 +38,9 @@ public class DemoController {
         return "test";
     }
 
-    @RequestMapping(value = "templlate", produces = "application/json;charset=UTF-8")
+    @RequestMapping(value = "var", produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public Map<String, Object> templlate() {
+    public Map<String, Object> var() {
         Map<String, Object> map = Maps.newHashMap();
         map.put("title", "测试");
         map.put("name", "张三");
@@ -53,5 +54,62 @@ public class DemoController {
                 ImmutableMap.of("name", "英语", "score", 70)));
         System.out.println(JSON.toJSONString(map));
         return map;
+    }
+
+    @RequestMapping(value = "{page}")
+    public String index(@PathVariable("page") String page) {
+        return page;
+    }
+
+    @RequestMapping("thymeleaf1")
+    @ResponseBody
+    public String thymeleaf() {
+        String text =
+//                "{(header.html)}  \n" +
+                "   <body>  \n" +
+                "   \n" +
+                "    <p>aaaaaa</p>\n" +
+                "   \n" +
+                "      {# 不转义变量输出 #}  \n" +
+                "      姓名：{* string.upper(name) *}<br/>  \n" +
+                "      {# 转义变量输出 #}  \n" +
+                "      简介：{{description}}<br/>  \n" +
+                "      {# 可以做一些运算 #}  \n" +
+                "      年龄: {* age + 1 *}<br/>  \n" +
+                "      {# 循环输出 #}  \n" +
+                "      爱好：  \n" +
+                "      {% for i, v in ipairs(hobby) do %}  \n" +
+                "         {% if i > 1 then %}，{% end %}  \n" +
+                "         {* v *}  \n" +
+                "      {% end %}<br/>  \n" +
+                "  \n" +
+                "      成绩：  \n" +
+                "      {% local i = 1; %}  \n" +
+                "      {% for k, v in pairs(score) do %}  \n" +
+                "         {% if i > 1 then %}，{% end %}  \n" +
+                "         {* k *} = {* v *}  \n" +
+                "         {% i = i + 1 %}  \n" +
+                "      {% end %}<br/>  \n" +
+                "      成绩2：  \n" +
+                "      {% for i = 1, #score2 do local t = score2[i] %}  \n" +
+                "         {% if i > 1 then %}，{% end %}  \n" +
+                "          {* t.name *} = {* t.score *}  \n" +
+                "      {% end %}<br/>  \n" +
+                "      成绩3：  \n" +
+                "      {% local i = 1; %}  \n" +
+                "      {% for k, v in pairs(score2) do %}  \n" +
+                "         {% if i > 1 then %}，{% end %}  \n" +
+                "         {* v.name *} = {* v.score *}  \n" +
+                "         {% i = i + 1 %}  \n" +
+                "      {% end %}<br/>  \n" +
+                "      \n" +
+                "      {# 中间内容不解析 #}  \n" +
+                "      {-raw-}{* description *}{-raw-}  \n" +
+//                "{(footer.html)}\n" +
+                "\n" ;
+//                "<script>\n" +
+//                "   alert(111)\n" +
+//                "</script>";
+        return text;
     }
 }
