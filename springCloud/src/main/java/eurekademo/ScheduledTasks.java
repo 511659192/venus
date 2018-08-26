@@ -14,8 +14,8 @@ import java.util.concurrent.TimeUnit;
  * Created by ym on 2018/8/21.
  */
 //@Component
-@EnableScheduling
-@EnableCaching
+//@EnableScheduling
+//@EnableCaching
 public class ScheduledTasks{
 
     @Scheduled(fixedRate = 1000)

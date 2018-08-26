@@ -5,9 +5,9 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-@EnableScheduling
-@Component
-@EnableCaching
+//@EnableScheduling
+//@Component
+//@EnableCaching
 public class ScheduledDemo {
 
     @Scheduled(fixedRate = 1000)

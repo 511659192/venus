@@ -27,7 +27,7 @@ import java.util.concurrent.Executors;
  *
  */
 @SpringBootApplication
-@EnableCaching
+//@EnableCaching
 //@EnableEurekaServer
 //@EnableEurekaClient
 public class EurekaApplication {
