@@ -1,5 +1,6 @@
 package eurekademo.controller;
 
+import eurekademo.User;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Controller;
@@ -14,9 +15,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @CacheConfig(cacheNames = "demo")
 public class CacheService {
 
-    @Cacheable
-    public void getById(Long id) {
-        System.out.println("id");
+    @Cacheable(key = "#user.name")
+    public User getById(User user) {
+        System.out.println(user);
+        return user;
     }
 
 

@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import eurekademo.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheConfig;
@@ -26,15 +27,13 @@ public class DemoController {
     @Autowired
     private CacheService cacheService;
 
-
     @RequestMapping("test")
     @ResponseBody
     public String test() {
-        Long lv = Long.valueOf(1);
-        cacheService.getById(lv);
-        cacheService.getById(lv);
-        cacheService.getById2(lv);
-        cacheService.getById2(lv);
+        User user = new User();
+        user.setName("user");
+        cacheService.getById(user);
+        cacheService.getById(user);
         return "test";
     }
 

@@ -4,6 +4,7 @@ import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 
 import java.lang.reflect.Method;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * Created by ym on 2018/6/24.
@@ -11,6 +12,7 @@ import java.lang.reflect.Method;
 public class CglibDynamicProxyDemo {
 
     static class SampleClass {
+//        CountDownLatch
         public void print(){
             System.out.println("hello world");
         }

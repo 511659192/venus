@@ -20,6 +20,7 @@ import org.springframework.util.StringUtils;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.Executors;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  *
@@ -27,13 +28,12 @@ import java.util.concurrent.Executors;
  *
  */
 @SpringBootApplication
-//@EnableCaching
+@EnableCaching
 //@EnableEurekaServer
 //@EnableEurekaClient
 public class EurekaApplication {
 	public static void main(String[] args) throws Exception {
 //		System.setProperty(DebuggingClassWriter.DEBUG_LOCATION_PROPERTY,Thread.currentThread().getContextClassLoader().getResource("").getPath());
-
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
 		Enumeration<URL> urls = (classLoader != null ?
