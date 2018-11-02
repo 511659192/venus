@@ -1,0 +1,4 @@
+function inner() {
+    
+}
+alert(inner)

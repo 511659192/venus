@@ -10,7 +10,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 public class ApplicationContextTest {
 
     public static void main(String[] args) {
-        System.setProperty(DebuggingClassWriter.DEBUG_LOCATION_PROPERTY, Thread.currentThread().getContextClassLoader().getResource("").getPath());
+//        System.setProperty(DebuggingClassWriter.DEBUG_LOCATION_PROPERTY, Thread.currentThread().getContextClassLoader().getResource("").getPath());
         ApplicationContext context = new ClassPathXmlApplicationContext("aop.xml");
         TestBean bean = (TestBean) context.getBean("testBean");
         bean.test();

@@ -1,5 +1,5 @@
 server:
-  port: 8761
+  port: 8989
 
 
 eureka:
@@ -8,4 +8,4 @@ eureka:
     fetchRegistry: false
   server:
     waitTimeInMsWhenSyncEmpty: 0
-debug: true
+debug: false

@@ -1,0 +1,5 @@
+function outter() {
+
+}
+
+alert("outer")
