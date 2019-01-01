@@ -1,6 +1,8 @@
 package eurekademo;
 
 import com.alibaba.fastjson.JSON;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Lists;
@@ -20,6 +22,7 @@ import org.springframework.util.StringUtils;
 
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -34,6 +37,15 @@ import java.util.concurrent.locks.ReentrantLock;
 //@EnableEurekaClient
 public class EurekaApplication {
 	public static void main(String[] args) throws Exception {
+		CacheBuilder<Object, Object> cacheBuilder = CacheBuilder.newBuilder();
+		Cache<Object, Object> build = cacheBuilder.build();
+		build.get("aa", new Callable<Object>() {
+			@Override
+			public Object call() throws Exception {
+				return null;
+			}
+		});
+
 //		System.setProperty(DebuggingClassWriter.DEBUG_LOCATION_PROPERTY,Thread.currentThread().getContextClassLoader().getResource("").getPath());
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
