@@ -5,7 +5,7 @@
  *
  * @generated
  */
-package com.ym.materials.thrift.gened;
+package com.ym.materials.thrift.codegen.gened;
 
 import org.apache.thrift.TBase;
 import org.apache.thrift.TBaseHelper;

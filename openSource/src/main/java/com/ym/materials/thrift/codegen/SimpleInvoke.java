@@ -1,8 +1,8 @@
-package com.ym.materials.thrift.invoke;
+package com.ym.materials.thrift.codegen.invoke;
 
-import com.ym.materials.thrift.HelloServiceImpl;
-import com.ym.materials.thrift.gened.HelloService;
-import com.ym.materials.thrift.gened.User;
+import com.ym.materials.thrift.codegen.HelloServiceImpl;
+import com.ym.materials.thrift.codegen.gened.HelloService;
+import com.ym.materials.thrift.codegen.gened.User;
 import org.apache.thrift.TException;
 import org.apache.thrift.TProcessor;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -13,12 +13,15 @@ import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
+import org.junit.Test;
 
 /**
  * Created by ym on 2019/1/1.
  */
 public class SimpleInvoke {
 
+
+    @Test
     public void startService() throws TTransportException {
         TProcessor tpProcessor = new HelloService.Processor<>(new HelloServiceImpl());
         int port = 8091;
@@ -31,6 +34,7 @@ public class SimpleInvoke {
         server.serve();
     }
 
+    @Test
     public void startClient() throws TException {
         String ip = "127.0.0.1";
         int port = 8091;

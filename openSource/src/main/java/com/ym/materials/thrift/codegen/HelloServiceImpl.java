@@ -1,7 +1,7 @@
-package com.ym.materials.thrift;
+package com.ym.materials.thrift.codegen;
 
-import com.ym.materials.thrift.gened.HelloService;
-import com.ym.materials.thrift.gened.User;
+import com.ym.materials.thrift.codegen.gened.HelloService;
+import com.ym.materials.thrift.codegen.gened.User;
 
 /**
  * Created by ym on 2019/1/1.
