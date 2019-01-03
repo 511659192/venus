@@ -1,16 +1,8 @@
 package com.ym.materials;
 
-import com.alibaba.fastjson.JSON;
-import com.ym.materials.jdk.reOrder.Main;
-import com.ym.materials.unsafe.Array;
-import jdk.internal.util.xml.impl.Input;
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
-import java.util.function.ToIntFunction;
 
 /**
  * Created by ym on 2018/10/19.
