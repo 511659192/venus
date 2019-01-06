@@ -7,9 +7,12 @@
  */
 package com.ym.materials.thrift.codegen.gened;
 
+import org.apache.thrift.ProcessFunction;
+import org.apache.thrift.TBase;
 import org.apache.thrift.TException;
+import org.apache.thrift.TFieldIdEnum;
 import org.apache.thrift.async.AsyncMethodCallback;
-import org.apache.thrift.protocol.TTupleProtocol;
+import org.apache.thrift.protocol.*;
 import org.apache.thrift.scheme.IScheme;
 import org.apache.thrift.scheme.SchemeFactory;
 import org.apache.thrift.scheme.StandardScheme;
@@ -32,7 +35,7 @@ public class HelloService {
 
     public interface AsyncIface {
 
-        public void sayHello(User user, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
+        public void sayHello(User user, AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
     }
 
     public static class Client extends org.apache.thrift.TServiceClient implements Iface {
@@ -98,7 +101,7 @@ public class HelloService {
             super(protocolFactory, clientManager, transport);
         }
 
-        public void sayHello(User user, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
+        public void sayHello(User user, AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
             checkReady();
             sayHello_call method_call = new sayHello_call(user, resultHandler, this, ___protocolFactory, ___transport);
             this.___currentMethod = method_call;
@@ -108,13 +111,13 @@ public class HelloService {
         public static class sayHello_call extends org.apache.thrift.async.TAsyncMethodCall {
             private User user;
 
-            public sayHello_call(User user, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+            public sayHello_call(User user, AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
                 super(client, protocolFactory, transport, resultHandler, false);
                 this.user = user;
             }
 
             public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
-                prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("sayHello", org.apache.thrift.protocol.TMessageType.CALL, 0));
+                prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("sayHello", TMessageType.CALL, 0));
                 sayHello_args args = new sayHello_args();
                 args.setUser(user);
                 args.write(prot);
@@ -137,19 +140,19 @@ public class HelloService {
         private static final Logger LOGGER = LoggerFactory.getLogger(Processor.class.getName());
 
         public Processor(I iface) {
-            super(iface, getProcessMap(new HashMap<String, org.apache.thrift.ProcessFunction<I, ? extends org.apache.thrift.TBase>>()));
+            super(iface, getProcessMap(new HashMap<String, ProcessFunction<I, ? extends TBase>>()));
         }
 
-        protected Processor(I iface, Map<String, org.apache.thrift.ProcessFunction<I, ? extends org.apache.thrift.TBase>> processMap) {
+        protected Processor(I iface, Map<String, ProcessFunction<I, ? extends TBase>> processMap) {
             super(iface, getProcessMap(processMap));
         }
 
-        private static <I extends Iface> Map<String, org.apache.thrift.ProcessFunction<I, ? extends org.apache.thrift.TBase>> getProcessMap(Map<String, org.apache.thrift.ProcessFunction<I, ? extends org.apache.thrift.TBase>> processMap) {
+        private static <I extends Iface> Map<String, ProcessFunction<I, ? extends TBase>> getProcessMap(Map<String, ProcessFunction<I, ? extends TBase>> processMap) {
             processMap.put("sayHello", new sayHello());
             return processMap;
         }
 
-        public static class sayHello<I extends Iface> extends org.apache.thrift.ProcessFunction<I, sayHello_args> {
+        public static class sayHello<I extends Iface> extends ProcessFunction<I, sayHello_args> {
             public sayHello() {
                 super("sayHello");
             }
@@ -175,14 +178,14 @@ public class HelloService {
         private static final Logger LOGGER = LoggerFactory.getLogger(AsyncProcessor.class.getName());
 
         public AsyncProcessor(I iface) {
-            super(iface, getProcessMap(new HashMap<String, org.apache.thrift.AsyncProcessFunction<I, ? extends org.apache.thrift.TBase, ?>>()));
+            super(iface, getProcessMap(new HashMap<String, org.apache.thrift.AsyncProcessFunction<I, ? extends TBase, ?>>()));
         }
 
-        protected AsyncProcessor(I iface, Map<String, org.apache.thrift.AsyncProcessFunction<I, ? extends org.apache.thrift.TBase, ?>> processMap) {
+        protected AsyncProcessor(I iface, Map<String, org.apache.thrift.AsyncProcessFunction<I, ? extends TBase, ?>> processMap) {
             super(iface, getProcessMap(processMap));
         }
 
-        private static <I extends AsyncIface> Map<String, org.apache.thrift.AsyncProcessFunction<I, ? extends org.apache.thrift.TBase, ?>> getProcessMap(Map<String, org.apache.thrift.AsyncProcessFunction<I, ? extends org.apache.thrift.TBase, ?>> processMap) {
+        private static <I extends AsyncIface> Map<String, org.apache.thrift.AsyncProcessFunction<I, ? extends TBase, ?>> getProcessMap(Map<String, org.apache.thrift.AsyncProcessFunction<I, ? extends TBase, ?>> processMap) {
             processMap.put("sayHello", new sayHello());
             return processMap;
         }
@@ -203,7 +206,7 @@ public class HelloService {
                         sayHello_result result = new sayHello_result();
                         result.success = o;
                         try {
-                            fcall.sendResponse(fb, result, org.apache.thrift.protocol.TMessageType.REPLY, seqid);
+                            fcall.sendResponse(fb, result, TMessageType.REPLY, seqid);
                             return;
                         } catch (Exception e) {
                             LOGGER.error("Exception writing to internal frame buffer", e);
@@ -212,12 +215,12 @@ public class HelloService {
                     }
 
                     public void onError(Exception e) {
-                        byte msgType = org.apache.thrift.protocol.TMessageType.REPLY;
-                        org.apache.thrift.TBase msg;
+                        byte msgType = TMessageType.REPLY;
+                        TBase msg;
                         sayHello_result result = new sayHello_result();
                         {
-                            msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
-                            msg = (org.apache.thrift.TBase) new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
+                            msgType = TMessageType.EXCEPTION;
+                            msg = (TBase) new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
                         }
                         try {
                             fcall.sendResponse(fb, msg, msgType, seqid);
@@ -234,17 +237,17 @@ public class HelloService {
                 return false;
             }
 
-            public void start(I iface, sayHello_args args, org.apache.thrift.async.AsyncMethodCallback<String> resultHandler) throws TException {
+            public void start(I iface, sayHello_args args, AsyncMethodCallback<String> resultHandler) throws TException {
                 iface.sayHello(args.user, resultHandler);
             }
         }
 
     }
 
-    public static class sayHello_args implements org.apache.thrift.TBase<sayHello_args, sayHello_args._Fields>, java.io.Serializable, Cloneable, Comparable<sayHello_args> {
-        private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("sayHello_args");
+    public static class sayHello_args implements TBase<sayHello_args, sayHello_args._Fields>, java.io.Serializable, Cloneable, Comparable<sayHello_args> {
+        private static final TStruct STRUCT_DESC = new TStruct("sayHello_args");
 
-        private static final org.apache.thrift.protocol.TField USER_FIELD_DESC = new org.apache.thrift.protocol.TField("user", org.apache.thrift.protocol.TType.STRUCT, (short) 1);
+        private static final TField USER_FIELD_DESC = new TField("user", TType.STRUCT, (short) 1);
 
         private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
 
@@ -256,7 +259,7 @@ public class HelloService {
         public User user; // required
 
         /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-        public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+        public enum _Fields implements TFieldIdEnum {
             USER((short) 1, "user");
 
             private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -319,7 +322,7 @@ public class HelloService {
         static {
             Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
             tmpMap.put(_Fields.USER, new org.apache.thrift.meta_data.FieldMetaData("user", org.apache.thrift.TFieldRequirementType.DEFAULT,
-                    new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, User.class)));
+                    new org.apache.thrift.meta_data.StructMetaData(TType.STRUCT, User.class)));
             metaDataMap = Collections.unmodifiableMap(tmpMap);
             org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(sayHello_args.class, metaDataMap);
         }
@@ -529,16 +532,16 @@ public class HelloService {
         private static class sayHello_argsStandardScheme extends StandardScheme<sayHello_args> {
 
             public void read(org.apache.thrift.protocol.TProtocol iprot, sayHello_args struct) throws org.apache.thrift.TException {
-                org.apache.thrift.protocol.TField schemeField;
+                TField schemeField;
                 iprot.readStructBegin();
                 while (true) {
                     schemeField = iprot.readFieldBegin();
-                    if (schemeField.type == org.apache.thrift.protocol.TType.STOP) {
+                    if (schemeField.type == TType.STOP) {
                         break;
                     }
                     switch (schemeField.id) {
                         case 1: // USER
-                            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                            if (schemeField.type == TType.STRUCT) {
                                 struct.user = new User();
                                 struct.user.read(iprot);
                                 struct.setUserIsSet(true);
@@ -607,10 +610,10 @@ public class HelloService {
 
     }
 
-    public static class sayHello_result implements org.apache.thrift.TBase<sayHello_result, sayHello_result._Fields>, java.io.Serializable, Cloneable, Comparable<sayHello_result> {
-        private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("sayHello_result");
+    public static class sayHello_result implements TBase<sayHello_result, sayHello_result._Fields>, java.io.Serializable, Cloneable, Comparable<sayHello_result> {
+        private static final TStruct STRUCT_DESC = new TStruct("sayHello_result");
 
-        private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.STRING, (short) 0);
+        private static final TField SUCCESS_FIELD_DESC = new TField("success", TType.STRING, (short) 0);
 
         private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
 
@@ -622,7 +625,7 @@ public class HelloService {
         public String success; // required
 
         /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
-        public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+        public enum _Fields implements TFieldIdEnum {
             SUCCESS((short) 0, "success");
 
             private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
@@ -685,7 +688,7 @@ public class HelloService {
         static {
             Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
             tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT,
-                    new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+                    new org.apache.thrift.meta_data.FieldValueMetaData(TType.STRING)));
             metaDataMap = Collections.unmodifiableMap(tmpMap);
             org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(sayHello_result.class, metaDataMap);
         }
@@ -892,16 +895,16 @@ public class HelloService {
         private static class sayHello_resultStandardScheme extends StandardScheme<sayHello_result> {
 
             public void read(org.apache.thrift.protocol.TProtocol iprot, sayHello_result struct) throws org.apache.thrift.TException {
-                org.apache.thrift.protocol.TField schemeField;
+                TField schemeField;
                 iprot.readStructBegin();
                 while (true) {
                     schemeField = iprot.readFieldBegin();
-                    if (schemeField.type == org.apache.thrift.protocol.TType.STOP) {
+                    if (schemeField.type == TType.STOP) {
                         break;
                     }
                     switch (schemeField.id) {
                         case 0: // SUCCESS
-                            if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                            if (schemeField.type == TType.STRING) {
                                 struct.success = iprot.readString();
                                 struct.setSuccessIsSet(true);
                             } else {

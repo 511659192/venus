@@ -9,6 +9,9 @@ package com.ym.materials.thrift.codegen.gened;
 
 import org.apache.thrift.TBase;
 import org.apache.thrift.TBaseHelper;
+import org.apache.thrift.TFieldRequirementType;
+import org.apache.thrift.meta_data.FieldMetaData;
+import org.apache.thrift.meta_data.FieldValueMetaData;
 import org.apache.thrift.protocol.*;
 import org.apache.thrift.scheme.IScheme;
 import org.apache.thrift.scheme.SchemeFactory;
@@ -37,7 +40,9 @@ public class User implements TBase<User, User._Fields>, java.io.Serializable, Cl
     public String name; // required
     public String email; // required
 
-    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    /**
+     * The set of fields this struct contains, along with convenience methods for finding and manipulating them.
+     */
     public enum _Fields implements org.apache.thrift.TFieldIdEnum {
         NAME((short) 1, "name"),
         EMAIL((short) 2, "email");
@@ -99,16 +104,16 @@ public class User implements TBase<User, User._Fields>, java.io.Serializable, Cl
     }
 
     // isset id assignments
-    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    public static final Map<_Fields, FieldMetaData> metaDataMap;
 
     static {
-        Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-        tmpMap.put(_Fields.NAME, new org.apache.thrift.meta_data.FieldMetaData("name", org.apache.thrift.TFieldRequirementType.DEFAULT,
-                new org.apache.thrift.meta_data.FieldValueMetaData(TType.STRING)));
-        tmpMap.put(_Fields.EMAIL, new org.apache.thrift.meta_data.FieldMetaData("email", org.apache.thrift.TFieldRequirementType.DEFAULT,
-                new org.apache.thrift.meta_data.FieldValueMetaData(TType.STRING)));
+        Map<_Fields, FieldMetaData> tmpMap = new EnumMap<_Fields, FieldMetaData>(_Fields.class);
+        tmpMap.put(_Fields.NAME, new FieldMetaData("name", TFieldRequirementType.DEFAULT,
+                new FieldValueMetaData(TType.STRING)));
+        tmpMap.put(_Fields.EMAIL, new FieldMetaData("email", TFieldRequirementType.DEFAULT,
+                new FieldValueMetaData(TType.STRING)));
         metaDataMap = Collections.unmodifiableMap(tmpMap);
-        org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(User.class, metaDataMap);
+        FieldMetaData.addStructMetaDataMap(User.class, metaDataMap);
     }
 
     public User() {
@@ -157,7 +162,9 @@ public class User implements TBase<User, User._Fields>, java.io.Serializable, Cl
         this.name = null;
     }
 
-    /** Returns true if field name is set (has been assigned a value) and false otherwise */
+    /**
+     * Returns true if field name is set (has been assigned a value) and false otherwise
+     */
     public boolean isSetName() {
         return this.name != null;
     }
@@ -181,7 +188,9 @@ public class User implements TBase<User, User._Fields>, java.io.Serializable, Cl
         this.email = null;
     }
 
-    /** Returns true if field email is set (has been assigned a value) and false otherwise */
+    /**
+     * Returns true if field email is set (has been assigned a value) and false otherwise
+     */
     public boolean isSetEmail() {
         return this.email != null;
     }
@@ -225,7 +234,9 @@ public class User implements TBase<User, User._Fields>, java.io.Serializable, Cl
         throw new IllegalStateException();
     }
 
-    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    /**
+     * Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise
+     */
     public boolean isSet(_Fields field) {
         if (field == null) {
             throw new IllegalArgumentException();
