@@ -10,6 +10,7 @@ import java.util.Scanner;
 public class result {
 
     public static void main(String[] args) throws Exception {
+        // 测试冲突 非master分支提交
         Scanner in = new Scanner(System.in);
 //        String input = "1 2 3 # # 6 7 # # # # # # # 8 9 10";
         String input = in.nextLine();

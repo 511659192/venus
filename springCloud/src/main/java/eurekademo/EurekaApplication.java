@@ -37,15 +37,6 @@ import java.util.concurrent.locks.ReentrantLock;
 //@EnableEurekaClient
 public class EurekaApplication {
 	public static void main(String[] args) throws Exception {
-		CacheBuilder<Object, Object> cacheBuilder = CacheBuilder.newBuilder();
-		Cache<Object, Object> build = cacheBuilder.build();
-		build.get("aa", new Callable<Object>() {
-			@Override
-			public Object call() throws Exception {
-				return null;
-			}
-		});
-
 //		System.setProperty(DebuggingClassWriter.DEBUG_LOCATION_PROPERTY,Thread.currentThread().getContextClassLoader().getResource("").getPath());
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
