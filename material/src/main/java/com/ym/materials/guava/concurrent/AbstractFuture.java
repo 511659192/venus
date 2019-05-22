@@ -14,7 +14,6 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.concurrent.locks.LockSupport;
 
-import static com.google.common.base.Throwables.throwIfUnchecked;
 import static com.ym.materials.guava.concurrent.Futures.getDone;
 import static java.util.concurrent.atomic.AtomicReferenceFieldUpdater.newUpdater;
 import static org.junit.Assert.assertNotNull;
@@ -238,7 +237,6 @@ public abstract class AbstractFuture<T> extends FluentFuture<T> {
                 WAITER_NEXT_OFFSET = unsafe.objectFieldOffset(Waiter.class.getDeclaredField("next"));
                 UNSAFE = unsafe;
             } catch (Exception e) {
-                throwIfUnchecked(e);
                 throw new RuntimeException(e);
             }
         }

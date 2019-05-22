@@ -2,10 +2,15 @@
 <project version="4">
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/lua" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/material" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/materials2" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/openSource" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/pluginDemo" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/pluginDemo" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/pluginDemo/pluginProvider" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/pluginDemo/pluginProvider" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/pluginDemo/pluginProvider" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/pluginDemo/pluginProvider" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/springBoot2" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/springCloud" charset="UTF-8" />
   </component>

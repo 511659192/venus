@@ -24,6 +24,7 @@ import java.net.URL;
 import java.util.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -37,6 +38,25 @@ import java.util.concurrent.locks.ReentrantLock;
 //@EnableEurekaClient
 public class EurekaApplication {
 	public static void main(String[] args) throws Exception {
+
+
+        System.out.println(TimeUnit.MILLISECONDS.convert(1, TimeUnit.SECONDS));
+
+	    new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for (; ; ) {
+                    List<Integer> list = Lists.newArrayList();
+                    for (int i = 0; i < 10000; i++) {
+                        list.add(i);
+                    }
+                    try {
+                        Thread.sleep(1L);
+                    } catch (Exception e) {
+                    }
+                }
+            }
+        }).start();
 //		System.setProperty(DebuggingClassWriter.DEBUG_LOCATION_PROPERTY,Thread.currentThread().getContextClassLoader().getResource("").getPath());
 		ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 

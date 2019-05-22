@@ -6,11 +6,12 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="material" />
-        <module name="materials2" />
+        <module name="springCloud" />
         <module name="openSource" />
         <module name="springBoot2" />
-        <module name="springCloud" />
+        <module name="pluginProvider" />
+        <module name="material" />
+        <module name="materials2" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
@@ -18,8 +19,13 @@
       <module name="material" target="1.8" />
       <module name="materials2" target="1.8" />
       <module name="openSource" target="1.8" />
+      <module name="pluginDemo" target="1.8" />
+      <module name="pluginProvider" target="1.8" />
       <module name="springBoot2" target="1.8" />
       <module name="springCloud" target="1.8" />
+      <module name="trivial" target="1.5" />
+      <module name="trivial (1)" target="1.8" />
+      <module name="trivial (2)" target="1.5" />
       <module name="venus" target="1.8" />
     </bytecodeTargetLevel>
   </component>
@@ -28,6 +34,8 @@
       <module name="material" options="-bootclasspath /Library/Java/JavaVirtualMachines/jdk1.8.0_101.jdk/Contents/Home/jre/lib/rt.jar" />
       <module name="materials2" options="-bootclasspath /Library/Java/JavaVirtualMachines/jdk1.8.0_101.jdk/Contents/Home/jre/lib/rt.jar" />
       <module name="openSource" options="-bootclasspath /Library/Java/JavaVirtualMachines/jdk1.8.0_101.jdk/Contents/Home/jre/lib/rt.jar" />
+      <module name="pluginDemo" options="" />
+      <module name="pluginProvider" options="-bootclasspath /Library/Java/JavaVirtualMachines/jdk1.8.0_101.jdk/Contents/Home/jre/lib/rt.jar" />
       <module name="springBoot2" options="-bootclasspath /Library/Java/JavaVirtualMachines/jdk1.8.0_101.jdk/Contents/Home/jre/lib/rt.jar" />
       <module name="springCloud" options="-bootclasspath /Library/Java/JavaVirtualMachines/jdk1.8.0_101.jdk/Contents/Home/jre/lib/rt.jar" />
     </option>

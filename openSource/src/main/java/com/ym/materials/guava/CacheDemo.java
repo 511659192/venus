@@ -3,19 +3,30 @@ package com.ym.materials.guava;
 import com.alibaba.fastjson.JSON;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
 import com.google.common.cache.*;
+import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import javax.annotation.Nullable;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.FileInputStream;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.zip.GZIPOutputStream;
 
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
@@ -30,7 +41,7 @@ public class CacheDemo {
             System.out.println(text);
         }
 
-        public void error(String text, Throwable e) {
+        public void error(String text, Throwable e) throws Exception {
             e.printStackTrace();
             System.out.println(text);
         }
@@ -65,6 +76,22 @@ public class CacheDemo {
 //        cache.get("name10");
 //        cache.get("name11");
 //        cache.get("name12");
+
+        System.out.println(11);
+        List<Integer> list = Lists.newArrayList();
+        for (int i = 0; i < 10; i++) {
+            list.add(i);
+        }
+
+        Collection<Integer> filter = Collections2.filter(list, new Predicate<Integer>() {
+            @Override
+            public boolean apply(@Nullable Integer input) {
+                return (input & 3) == 0;
+            }
+        });
+
+        System.out.println(filter);
+
     }
 
     @Test

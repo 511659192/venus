@@ -1,0 +1,10 @@
+#!/bin/bash
+
+for file in `ls etc`
+do
+	if [ $file != 'fb303.thrift' ]
+	then
+		thrift --gen java -out ../banma_service_mall_admin_client/src/main/java etc/$file
+		thrift --gen java -out ../banma_service_mall_admin_server/src/main/java etc/$file
+	fi
+done

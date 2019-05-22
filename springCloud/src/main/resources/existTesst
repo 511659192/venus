@@ -1,0 +1,12 @@
+#!/bin/bash
+
+for line in $(cat ab |awk '{if(length !=0) print $0}')
+do
+    num=`grep -c $line aa`
+    if [ $num == 0 ]
+    then
+        echo $line" 0"
+    else
+        echo $line" 1"
+    fi
+done

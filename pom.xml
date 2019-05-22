@@ -13,6 +13,7 @@
         <module>openSource</module>
         <module>materials2</module>
         <module>springCloud</module>
+        <module>pluginDemo</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -64,7 +65,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <!--<version>27.0.1-jre</version>-->
+<!--            <version>27.1-jre</version>-->
             <version>19.0</version>
         </dependency>
 

@@ -4,6 +4,7 @@ import javafx.scene.control.Tab;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
+import java.util.HashMap;
 
 public class IdentityHashMap<K, V> {
 

@@ -2,6 +2,7 @@ package com.ym.materials.gson;
 
 import com.google.gson.internal.$Gson$Types;
 import com.google.gson.reflect.TypeToken;
+import org.junit.Test;
 import sun.net.www.content.text.Generic;
 
 import java.lang.reflect.Field;
@@ -21,6 +22,7 @@ public class TypeTokenDemo<E> {
         new TypeTokenDemo<String>().test();
     }
 
+    @Test
     public void test() throws Exception {
         TypeToken<Map<E, ? extends Number>> token = new TypeToken<Map<E, ? extends Number>>(){};
         System.out.println($Gson$Types.resolve(token.getType(), token.getRawType(), getGenericSupertype(token.getType(), token.getRawType(), Number.class)));

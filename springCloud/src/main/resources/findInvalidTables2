@@ -1,0 +1,18 @@
+#!/bin/bash
+
+echo "hello"
+cat /dev/null > renameTables
+cat /dev/null  > dropTables
+cat /dev/null  > result
+for line in $(cat existTables)
+do
+    echo $line
+    num=`find /Users/yangmeng/work/finds/ -name "*Dao*.java" -or -name "*.xml" | xargs grep -wim1 $line | wc -l`
+    printf '%-60s%d\n' $line $num >> result
+    if [ $num == 0 ]
+    then
+    	echo "alter table "$line" rename to "$line"_D;" >> renameTables
+    	echo "drop table "$line"_D;" >> dropTables
+    fi
+done
+echo "done"
