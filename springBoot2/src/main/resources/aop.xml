@@ -1,13 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
-	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop" xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd"
 
-	   default-autowire="byName">
+       default-autowire="byName">
 
 	<aop:aspectj-autoproxy/>
 
-	<bean class="com.example.demo.spring.MyAspect"></bean>
+    <context:component-scan base-package="com.example.demo.spring"/>
 
-	<bean id="testBean" class="com.example.demo.spring.TestBean"></bean>
+<!--	<bean class="com.example.demo.spring.MyAspect"></bean>-->
+
+<!--	<bean id="testBean" class="com.example.demo.spring.TestBean"></bean>-->
+
+
+<!--    <bean id="innerClassTest" class="com.example.demo.spring.InnerClassTest"></bean>-->
+
+
+<!--    <bean id="innerClass" class="com.example.demo.spring.InnerClassTest.InnerClass">-->
+<!--        <constructor-arg ref="innerClassTest"/>-->
+<!--    </bean>-->
 </beans>

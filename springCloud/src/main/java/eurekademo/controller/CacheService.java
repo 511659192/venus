@@ -17,12 +17,7 @@ public class CacheService {
 
     @Cacheable(key = "#user.name")
     public User getById(User user) {
-        System.out.println(user);
+        user.setName("user ret");
         return user;
-    }
-
-
-    public void getById2(Long id) {
-        System.out.println("id");
     }
 }

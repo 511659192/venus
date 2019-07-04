@@ -14,5 +14,10 @@ public class ApplicationContextTest {
         ApplicationContext context = new ClassPathXmlApplicationContext("aop.xml");
         TestBean bean = (TestBean) context.getBean("testBean");
         bean.test();
+        InnerClassTest.InnerClass bean1 = context.getBean(InnerClassTest.InnerClass.class);
+        bean1.say();
+        EstimateActivityProcessor bean2 = context.getBean(EstimateActivityProcessor.class);
+        bean2.getProcessor();
+
     }
 }

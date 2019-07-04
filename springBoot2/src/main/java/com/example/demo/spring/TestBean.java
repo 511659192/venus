@@ -1,8 +1,11 @@
 package com.example.demo.spring;
 
+import org.springframework.stereotype.Component;
+
 /**
  * Created by ym on 2018/4/10.
  */
+@Component
 public class TestBean {
 
     private String name;
