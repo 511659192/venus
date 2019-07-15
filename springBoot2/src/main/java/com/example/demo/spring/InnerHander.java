@@ -4,6 +4,7 @@ package com.example.demo.spring;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
@@ -16,41 +17,58 @@ import java.util.Map;
  * @created 2019-07-02 17:22
  **/
 @Component
-public class EstimateActivityProcessor implements InitializingBean, ApplicationContextAware {
+public class InnerHander {
 
-    private ApplicationContext applicationContext;
+    @Autowired
+    private InnerHander innerHander;
 
-    EstimateActivityProcessor getProcessor() {
-        System.out.println("---------");
-        return null;
+
+    private static EstimateActivityProcessor estimateActivityProcessor;
+
+    @Autowired
+    public void setEstimateActivityProcessor(EstimateActivityProcessor estimateActivityProcessor) {
+        InnerHander.estimateActivityProcessor = estimateActivityProcessor;
     }
 
+    @Component
+    enum Inner {
+        //
+        Test(1){
+            @Override
+            void run() {
+                estimateActivityProcessor.getProcessor();
+            }
+        }
+        ;
 
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        Map<String, Processor> beansOfType = applicationContext.getBeansOfType(Processor.class);
-        for (Map.Entry<String, Processor> entry : beansOfType.entrySet()) {
-            System.out.println(entry.getKey());
+
+        private int code;
+
+        Inner() {
         }
 
+        Inner(int code) {
+            this.code = code;
+        }
+
+        public static Inner getByCode(int code) {
+            for (Inner value : Inner.values()) {
+                if (value.code == code) {
+                    return value;
+                }
+            }
+
+            return null;
+        }
+
+        abstract void run();
+
+
+
     }
 
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
-    }
-
-    abstract class Processor {
-
-    }
-
-    @Component
-    class UserProcessor extends Processor {
-
-    }
-
-    @Component
-    class WaybillTotalCntProcessor extends Processor {
-
+    public void test() {
+        Inner inner = Inner.getByCode(1);
+        inner.run();
     }
 }

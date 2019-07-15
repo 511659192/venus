@@ -2,14 +2,7 @@
 // All rights reserved
 package com.example.demo.spring;
 
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
-
-import java.util.Map;
 
 /**
  * @author yangmeng
@@ -17,58 +10,37 @@ import java.util.Map;
  * @created 2019-07-02 17:22
  **/
 @Component
-public class InnerHander {
+public enum HandlerEnum {
 
-    @Autowired
-    private InnerHander innerHander;
+    //
+    Test(1){
+        @Override
+        public void runA() {
+            System.out.println("22222222");
+        }
+    }
+    ;
 
 
-    private static EstimateActivityProcessor estimateActivityProcessor;
+    private int code;
 
-    @Autowired
-    public void setEstimateActivityProcessor(EstimateActivityProcessor estimateActivityProcessor) {
-        InnerHander.estimateActivityProcessor = estimateActivityProcessor;
+    HandlerEnum(int code) {
+        this.code = code;
     }
 
-    @Component
-    enum Inner {
-        //
-        Test(1){
-            @Override
-            void run() {
-                estimateActivityProcessor.getProcessor();
+    public static HandlerEnum getByCode(int code) {
+        for (HandlerEnum value : HandlerEnum.values()) {
+            if (value.code == code) {
+                return value;
             }
         }
-        ;
 
-
-        private int code;
-
-        Inner() {
-        }
-
-        Inner(int code) {
-            this.code = code;
-        }
-
-        public static Inner getByCode(int code) {
-            for (Inner value : Inner.values()) {
-                if (value.code == code) {
-                    return value;
-                }
-            }
-
-            return null;
-        }
-
-        abstract void run();
-
-
-
+        return null;
     }
 
-    public void test() {
-        Inner inner = Inner.getByCode(1);
-        inner.run();
-    }
+    public void runA() {
+        System.out.println("111111");
+    };
+
+
 }

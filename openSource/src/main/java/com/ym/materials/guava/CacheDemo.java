@@ -349,6 +349,24 @@ public class CacheDemo {
 
     }
 
+
+
+    LoadingCache<String, Long> nullCache = CacheBuilder.newBuilder()
+            .refreshAfterWrite(2, TimeUnit.SECONDS) // 2s后重新刷新
+            .build(new CacheLoader<String, Long>() {
+                @Override
+                public Long load(String key) throws Exception {
+//                    throw new RuntimeException("aaa");
+                    return null;
+                }
+            });
+    @Test
+    public void testNull() throws InterruptedException {
+        Long result1 = nullCache.getIfPresent("guava");
+        Long result2 = nullCache.getIfPresent("guava");
+        System.out.println("-------------");
+    }
+
     static class Employee {
         private final String name;
         private final String dept;
